@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE = Path(__file__).parent / "fixtures" / "device_dump.tsv"
-STATE = {"fail_device": False, "down": False}
+STATE = {"fail_device": False, "down": False, "fail_code": "429", "station_calls": 0}
 
 
 def load_points():
@@ -44,10 +44,11 @@ class MockDeye(http.server.BaseHTTPRequestHandler):
             r = {"success": True, "stationList": [{"id": 1, "deviceListItems": [
                 {"deviceSn": "SN0001", "deviceType": "INVERTER"}]}]}
         elif path == "/v1.0/device/latest":
-            r = ({"success": False, "code": "429", "msg": "Too many requests"} if STATE["fail_device"]
+            r = ({"success": False, "code": STATE["fail_code"], "msg": "Device request failed"} if STATE["fail_device"]
                  else {"success": True, "deviceDataList": [{"deviceSn": "SN0001",
                        "collectionTime": "1794830000", "dataList": load_points()}]})
         elif path == "/v1.0/station/latest":
+            STATE["station_calls"] += 1
             r = {"success": True, "generationPower": 600, "consumptionPower": 400,
                  "wirePower": 30, "batteryPower": -170, "batterySOC": 42,
                  "lastUpdateTime": 1794830000}
@@ -98,7 +99,8 @@ def main():
     # Legacy plaintext credentials avoid the Keychain, so this also runs on Linux CI.
     (cfg_dir / "config.json").write_text(json.dumps({
         "base": f"http://127.0.0.1:{port}/v1.0", "appId": "app", "email": "user@example.com",
-        "appSecret": "secret", "password": "pw", "language": "en"}))
+        "appSecret": "secret", "password": "pw", "language": "en",
+        "minFetchSeconds": 0}))
 
     print("--check")
     code, out, _ = run("--check")
@@ -192,10 +194,29 @@ def main():
     finally:
         FIXTURE.write_text(original, encoding="utf-8")
 
+    print("minimum fetch age")
+    def api_count():
+        return json.loads((cfg_dir / "usage.json").read_text())["count"]
+    cfg = json.loads((cfg_dir / "config.json").read_text())
+    (cfg_dir / "config.json").write_text(json.dumps(dict(cfg, minFetchSeconds=60)))
+    run()                                       # last.json was just written: served from cache
+    before = api_count()
+    _, out, _ = run()
+    expect("recent data served from cache, no API call", api_count() == before
+           and "593W" in out.splitlines()[0])
+    (cfg_dir / "config.json").write_text(json.dumps(cfg))
+    run()
+    expect("minFetchSeconds 0 fetches again", api_count() == before + 1)
+
     print("fallback to station when device data fails")
-    STATE["fail_device"] = True
+    STATE["fail_device"], STATE["fail_code"] = True, "2101999"
     _, out, _ = run()
     expect("station summary used", out.splitlines()[0].count("600W") == 1)
+    print("rate limited (429): no fallback call")
+    STATE["fail_code"], STATE["station_calls"] = "429", 0
+    _, out, _ = run()
+    expect("429 shows cached data as stale", "pause.circle" in out.splitlines()[0])
+    expect("429 does not trigger the station fallback", STATE["station_calls"] == 0)
     STATE["fail_device"] = False
 
     print("API down -> cached data")

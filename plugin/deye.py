@@ -44,6 +44,7 @@ DEVICE_FILE = os.path.join(CFG_DIR, "device.json")
 USAGE_FILE = os.path.join(CFG_DIR, "usage.json")
 INTERVALS = ["30s", "1m", "2m", "5m", "10m", "15m"]
 DEFAULT_QUOTA = 100000
+MIN_FETCH_SECONDS = 60       # config "minFetchSeconds": reuse cached data younger than this
 LOCALE_DIR = os.path.join(CFG_DIR, "locales")
 KC_SERVICE = "deye-menubar"
 DEFAULT_LANG = "en"
@@ -57,7 +58,12 @@ class ConfigError(Exception):
 
 
 class ApiError(Exception):
-    pass
+    """transient=True: rate limit, server or network problem. Retrying right away would
+    only burn quota, so callers wait for the next scheduled refresh instead."""
+
+    def __init__(self, msg, transient=False):
+        super().__init__(msg)
+        self.transient = transient
 
 
 # ---------------------------------------------------------------- files
@@ -222,7 +228,7 @@ def api_post(cfg, path, body, token=None, query=""):
         payload["_http"] = e.code
         return payload
     except urllib.error.URLError as e:
-        raise ApiError(f"network: {e.reason}")
+        raise ApiError(f"network: {e.reason}", transient=True)
 
 
 def get_token(cfg, force=False):
@@ -258,7 +264,9 @@ def api_call(cfg, path, body):
         auth_problem = d.get("_http") == 401 or "token" in str(d.get("msg", "")).lower()
         if not auth_problem:
             break
-    raise ApiError(f"{d.get('code')}: {d.get('msg')}")
+    http = d.get("_http") or 0
+    transient = http == 429 or http >= 500 or str(d.get("code")) == "429"
+    raise ApiError(f"{d.get('code')}: {d.get('msg')}", transient=transient)
 
 
 def list_stations(cfg):
@@ -955,6 +963,9 @@ def collect(cfg):
             return summary_from_device(dev), dev
         except ConfigError:
             raise
+        except ApiError as e:
+            if e.transient:          # rate limited / server down: no second call, show cache
+                raise
         except Exception:
             pass
     summary = summary_from_station(fetch_station(cfg))
@@ -969,6 +980,23 @@ def collect(cfg):
     return summary, dev
 
 
+def fresh_cache(cfg):
+    """Last summary if it is too recent to fetch again (manual refresh, menu setting
+    changes), else None. Keeps the effective interval at or above minFetchSeconds."""
+    try:
+        min_age = float(cfg.get("minFetchSeconds", MIN_FETCH_SECONDS))
+        iv = current_interval()
+        if iv:                       # never skip a scheduled run of a short interval
+            min_age = min(min_age, 0.8 * interval_seconds(iv))
+        age = time.time() - os.path.getmtime(LAST_FILE)
+        if min_age <= 0 or not 0 <= age < min_age:
+            return None
+        last = read_json(LAST_FILE)
+        return last if "source" in last else None
+    except Exception:
+        return None
+
+
 def run():
     try:
         cfg = load_config()
@@ -977,6 +1005,10 @@ def run():
         return 0
 
     t = I18n(resolve_language(cfg))
+    cached = fresh_cache(cfg)
+    if cached:
+        render(cached, cfg, t, dev=cached_device())
+        return 0
     try:
         summary, dev = collect(cfg)
         write_private(LAST_FILE, summary)

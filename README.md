@@ -163,6 +163,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | `batteryCapacityKWh` | Optional. Battery capacity for the estimates; by default rated Ah × `batteryNominalVoltage` (51.2 V) |
 | `showDetails` | Station mode only: `false` disables the inverter details and their extra request |
 | `detailsRefreshSeconds` | Station mode only: minimum time between inverter detail requests |
+| `minFetchSeconds` | Optional (default 60, `0` disables). A manual refresh or a menu setting change within this time of the last fetch shows the cached data instead of calling the API. Never applied to scheduled runs |
 | `titleFont` / `titleSize` | Optional font name (e.g. `SFMono-Regular`) and size for the title |
 
 Changes take effect on the next refresh.
