@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 — 2026-11-16
+
+- Grid power is now shown exactly (e.g. "importing 17W") instead of "~0" below 20 W. New setting `thresholds.gridIdleWatts` (default 0); `idleWatts` now only applies to the battery.
+- "Self-sufficiency" renamed to "Grid independence" (Romanian: "Independență față de rețea"): it is the share of today's consumption not bought from the grid, not a battery value.
+
 ## 1.1.0 — 2026-11-16
 
 - Default refresh interval is now 5 minutes (the update interval of the Deye inverter itself), down from 1 minute: fewer API calls (~8,640 per month) with no loss of fresh data. Existing installs keep their current interval; change it any time from the **Refresh interval** menu.

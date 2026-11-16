@@ -17,7 +17,7 @@ Your Deye hybrid inverter in the macOS menu bar, in the style of MenuMeters. Sol
 - **Grid outage alert:** an icon in the menu bar when the inverter's grid relay opens.
 - **Details per PV string and per phase:** power, voltage, current.
 - **Battery:** voltage, current, temperature, stored energy, time to full / to reserve, estimated cycles, BMS values.
-- **Energy counters:** today and lifetime production, consumption, grid bought / sold, battery charged / discharged, daily self-sufficiency.
+- **Energy counters:** today and lifetime production, consumption, grid bought / sold, battery charged / discharged, daily grid independence (share of consumption not bought from the grid).
 - **Inverter:** output per phase, temperature, grid relay, rated power, firmware.
 - **Everything else:** every raw data point the inverter reports.
 - **From the menu:** change the refresh interval (with API quota estimates) and the language.
@@ -85,7 +85,7 @@ The menu shows the main values with detail lines under each:
 - **Home consumption**: UPS (backup port) load, plus voltage and power per phase.
 - **Battery**: voltage, current, temperature, stored energy, and the estimated time until full (when charging) or until the reserve level (when discharging).
 - **Grid**: voltage, current and power per phase, and today's bought / sold energy.
-- **Energy today ▸**: production, consumption, bought, sold, charged and discharged, plus today's self-sufficiency.
+- **Energy today ▸**: production, consumption, bought, sold, charged and discharged, plus today's grid independence.
 - **Lifetime totals ▸**: the same counters since installation.
 - **Battery ▸**: SoC, voltage, current, power, temperature, BMS values, capacity, energy charged / discharged (today and lifetime), estimated cycles, firmware.
 - **Inverter ▸**: output power (total and per phase), temperature, grid relay status, rated power and firmware.
@@ -130,7 +130,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
   "email": "you@example.com",
   "stationId": 123456,
   "language": "auto",
-  "thresholds": { "lowBatteryPercent": 20, "idleWatts": 20 },
+  "thresholds": { "lowBatteryPercent": 20, "idleWatts": 20, "gridIdleWatts": 0 },
   "invertBatterySign": false,
   "invertGridSign": false,
   "barIcons": "mono",
@@ -148,7 +148,8 @@ Non-secret settings are in `~/.config/deye/config.json`:
 |---|---|
 | `language` | `auto`, or a code from `~/.config/deye/locales/` (`en`, `ro`, …) |
 | `thresholds.lowBatteryPercent` | Below this SoC the title turns red |
-| `thresholds.idleWatts` | Battery or grid flows below this are shown as idle / ~0 |
+| `thresholds.idleWatts` | Battery flows below this are shown as idle |
+| `thresholds.gridIdleWatts` | Grid flows up to this are shown as ~0. Default `0`: the exact grid power is always shown |
 | `invertBatterySign` | Set to `true` if charging and discharging appear reversed on your inverter |
 | `invertGridSign` | Set to `true` if import and export appear reversed (Deye convention: positive = import) |
 | `barIcons` | Menu bar icons: `mono` (SF Symbols that follow the menu bar color, default) or `color` (colored emoji). Also selectable from the menu: **Icons ▸ Menu bar** |

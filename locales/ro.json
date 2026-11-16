@@ -43,7 +43,7 @@
   "e_sold": "Vândut în rețea",
   "e_charged": "Încărcat în baterie",
   "e_discharged": "Descărcat din baterie",
-  "self_sufficiency": "Autonomie: {percent}",
+  "self_sufficiency": "Independență față de rețea: {percent}",
   "rated_power": "Putere nominală: {power}",
   "firmware": "Firmware: {version}",
   "battery_menu": "Baterie",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.1.0</xbar.version>
+# <xbar.version>v1.1.1</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -35,7 +35,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -716,7 +716,8 @@ def submenu_battery(pt, cfg, t):
 def render(s, cfg, t, dev=None, stale_error=None):
     th = cfg.get("thresholds") or {}
     low_battery = float(th.get("lowBatteryPercent", 20))
-    idle = float(th.get("idleWatts", 20))
+    idle = float(th.get("idleWatts", 20))               # battery flows below this are "idle"
+    grid_idle = float(th.get("gridIdleWatts", 0))       # grid: show the exact value by default
 
     batt, grid, soc = s.get("battery"), s.get("grid"), s.get("soc")
     if batt is not None and cfg.get("invertBatterySign"):
@@ -735,7 +736,7 @@ def render(s, cfg, t, dev=None, stale_error=None):
 
     if grid_down:
         grid_state = t("grid_down", status=s.get("gridRelay"))
-    elif grid is None or abs(grid) < idle:
+    elif grid is None or abs(grid) <= grid_idle:
         grid_state = t("grid_idle")
     elif grid > 0:
         grid_state = t("grid_import", power=fmt_power(grid))

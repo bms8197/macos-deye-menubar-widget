@@ -44,7 +44,7 @@
   "e_sold": "Sold to grid",
   "e_charged": "Battery charged",
   "e_discharged": "Battery discharged",
-  "self_sufficiency": "Self-sufficiency: {percent}",
+  "self_sufficiency": "Grid independence: {percent}",
   "rated_power": "Rated power: {power}",
   "firmware": "Firmware: {version}",
   "battery_menu": "Battery",

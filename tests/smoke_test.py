@@ -113,7 +113,7 @@ def main():
            and "PV3" not in main_menu)
     expect("grid positive = import", "Grid: importing 32W" in out)
     expect("battery submenu", "\nBattery\n" in out and "Cycles (estimated)" in out)
-    expect("energy submenus", "Energy today" in out and "Self-sufficiency: 36%" in out)
+    expect("energy submenus", "Energy today" in out and "Grid independence: 36%" in out)
     expect("no frequency in main menu", "Frequency" not in main_menu)
     expect("interval menu with quota", "Refresh interval: 1 min" in out and "43.2k" in out)
     expect("usage counter written", (cfg_dir / "usage.json").exists())
@@ -143,6 +143,21 @@ def main():
            and run("--set-icons", "foo", "mono")[0] == 1)
     run("--set-icons", "bar", "mono")
     run("--set-icons", "menu", "mono")
+
+    print("small grid power")
+    original = FIXTURE.read_text(encoding="utf-8")
+    try:
+        FIXTURE.write_text(original.replace("TotalGridPower\t32\tW", "TotalGridPower\t17\tW"),
+                           encoding="utf-8")
+        _, out, _ = run()
+        expect("17 W grid shown exactly", "Grid: importing 17W" in out)
+        cfg = json.loads((cfg_dir / "config.json").read_text())
+        (cfg_dir / "config.json").write_text(json.dumps(dict(cfg, thresholds={"gridIdleWatts": 20})))
+        _, out, _ = run()
+        expect("gridIdleWatts hides small flows", "Grid: ~0" in out)
+        (cfg_dir / "config.json").write_text(json.dumps(cfg))
+    finally:
+        FIXTURE.write_text(original, encoding="utf-8")
 
     print("Romanian")
     run("--set-language", "ro")
