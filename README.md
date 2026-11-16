@@ -228,7 +228,7 @@ The uninstaller removes the plugin and the Keychain items, and optionally the se
 
 | Inverter | Battery | Notes |
 |---|---|---|
-| Deye SUN-10K-SG05LP3-EU-SM2 (3-phase hybrid, 10 kW) | 314 Ah LiFePO4 | Whole house on the UPS (backup) port |
+| Deye SUN-10K-SG05LP3-EU-SM2 (3-phase hybrid, 10 kW) | Deye LiFePO4 SE-F16 (16 kWh, 51.2 V, 314 Ah, IP21) | Whole house on the UPS (backup) port |
 
 Data point names come from the Deye Cloud API and may differ between inverter models. If something is missing or wrong on yours, open an issue with the output of `--dump-device`. Remove the serial number before posting.
 
