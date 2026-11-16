@@ -5,6 +5,10 @@
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
 # <swiftbar.hideAbout>true</swiftbar.hideAbout>
+#
+# Developed by Bogdan Stoica (bogdan at 898 dot ro), November 2026.
+# Co-developed by Claude.
+# Released under the MIT License, see LICENSE.
 """
 Deye Menubar - SwiftBar plugin for Deye Cloud OpenAPI.
 
