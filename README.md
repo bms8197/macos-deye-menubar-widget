@@ -13,13 +13,13 @@ Your Deye hybrid inverter in the macOS menu bar, in the style of MenuMeters. Sol
 
 ## Features
 
-- **Menu bar:** PV production, battery SoC with charge / discharge arrow, home consumption. Monochrome SF Symbols that stay readable on tinted menu bars and inactive displays (emoji style optional).
+- **Menu bar:** PV production, battery SoC with charge / discharge arrow, home consumption and grid power. Monochrome SF Symbols by default, which stay readable on tinted menu bars and inactive displays; colored symbols or emoji are optional.
 - **Grid outage alert:** an icon in the menu bar when the inverter's grid relay opens.
 - **Details per PV string and per phase:** power, voltage, current.
 - **Battery:** voltage, current, temperature, stored energy, time to full / to reserve, estimated cycles, BMS values.
 - **Energy counters:** today and lifetime production, consumption, grid bought / sold, battery charged / discharged, daily grid independence (share of consumption not bought from the grid).
 - **Inverter:** output per phase, temperature, grid relay, rated power, firmware.
-- **Everything else:** every raw data point the inverter reports.
+- **Raw data:** `--dump-device` prints every data point the inverter reports.
 - **From the menu:** change the refresh interval (with API quota estimates) and the language.
 - **Translations:** English and Romanian included; adding a language is one JSON file.
 - **Quota-friendly:** one API call per refresh, token cached, last known data shown if the API is unavailable.
@@ -73,8 +73,9 @@ The installer is safe to re-run at any time to change credentials, station, lang
 | sun | Current PV production |
 | battery | State of charge (the icon fill follows the level); `↑` charging, `↓` discharging |
 | house | Current home consumption |
+| bolt | Grid power: positive = import, with a minus (e.g. `-93W`) = export |
 | yellow text | Battery below the low-battery threshold (default 20%) |
-| bolt-slash icon (yellow) | Grid relay open: grid outage, running on battery |
+| bolt-slash icon (yellow) | Grid relay open: grid outage, running on battery (replaces the grid value) |
 | pause icon | API unavailable or rate-limited; showing the last known data |
 | warning icon | Error and no cached data yet; open the menu for details |
 | ☀️⚙️ | Not configured; run `install.sh` |
@@ -152,7 +153,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | `thresholds.gridIdleWatts` | Grid flows up to this are shown as ~0. Default `0`: the exact grid power is always shown |
 | `invertBatterySign` | Set to `true` if charging and discharging appear reversed on your inverter |
 | `invertGridSign` | Set to `true` if import and export appear reversed (Deye convention: positive = import) |
-| `barIcons` | Menu bar icons: `mono` (SF Symbols that follow the menu bar color, default) or `color` (colored emoji). Also selectable from the menu: **Icons ▸ Menu bar** |
+| `barIcons` | Menu bar icons: `mono` (SF Symbols that follow the menu bar color, default), `symbols` (the same SF Symbols, each in its own color, chosen to stay readable on red and blue bars) or `color` (colored emoji). Also selectable from the menu: **Icons ▸ Menu bar** |
 | `menuIcons` | Dropdown section icons: `mono` (default), `color` or `none`. Also selectable from the menu: **Icons ▸ Dropdown menu** |
 | `titleColor` | Empty = system menu bar color (recommended). Or a fixed color, e.g. `#FFFFFF`; `#FFFFFF,#FFFFFF` sets light and dark mode separately |
 | `lowBatteryColor` | Title color when the battery is low; yellow by default so it stays visible on red or dark menu bars |

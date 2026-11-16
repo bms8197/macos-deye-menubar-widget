@@ -119,6 +119,8 @@ def main():
     expect("usage counter written", (cfg_dir / "usage.json").exists())
     expect("no raw data-point dump in the menu", "ACVoltageRUA" not in out)
 
+    expect("grid power in title", ":bolt.fill: 32W" in title)
+
     print("icons")
     expect("default: mono bar", out.splitlines()[0].startswith(":sun.max.fill:"))
     expect("default: mono menu icons", "Solar production: 593W | sfimage=sun.max.fill\n" in out
@@ -136,6 +138,17 @@ def main():
     code, _, _ = run("--set-icons", "bar", "color")
     _, out, _ = run()
     expect("color bar uses emoji", out.splitlines()[0].startswith("☀️") and "symbolize=false" in out.splitlines()[0])
+    run("--set-icons", "bar", "symbols")
+    _, out, _ = run()
+    title = out.splitlines()[0]
+    expect("colored symbols in bar", title.startswith(":sun.max.fill:") and "sfcolor=#D99A00,#FFD60A" in title
+           and "sfcolor2=" in title and "sfcolor3=#0A84FF,#64D2FF" in title and "symbolize=true" in title)
+    expect("grid symbol colored", "sfcolor4=#A04BD6,#D6A2FF" in title and ":bolt.fill: 32W" in title)
+    expect("symbols option in icons menu", "----Color (symbols)" in out)
+    run("--set-icons", "bar", "color")
+    _, out, _ = run()
+    expect("grid power in emoji title", out.splitlines()[0].count("⚡32W") == 1)
+    run("--set-icons", "bar", "symbols")
     run("--set-icons", "menu", "none")
     _, out, _ = run()
     expect("no menu icons", "sfimage" not in out)
@@ -173,7 +186,8 @@ def main():
         FIXTURE.write_text(original.replace("GridRelayStatus\tPull-in", "GridRelayStatus\tBreak"),
                            encoding="utf-8")
         _, out, _ = run()
-        expect("bolt-slash in title", "bolt.slash.fill" in out.splitlines()[0])
+        expect("bolt-slash in title", "bolt.slash.fill" in out.splitlines()[0]
+               and ":bolt.fill:" not in out.splitlines()[0])
         expect("grid disconnected line", "DISCONNECTED" in out)
     finally:
         FIXTURE.write_text(original, encoding="utf-8")

@@ -23,6 +23,7 @@
   "icons_menu": "Meniul derulant",
   "icons_mono": "Monocrom",
   "icons_color": "Color",
+  "icons_symbols": "Color (simboluri)",
   "icons_none": "Fără",
   "refresh_now": "Actualizează acum",
   "ups_load": "Consum UPS: {power}",

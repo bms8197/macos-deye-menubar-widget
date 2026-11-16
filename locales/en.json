@@ -24,6 +24,7 @@
   "icons_menu": "Dropdown menu",
   "icons_mono": "Monochrome",
   "icons_color": "Color",
+  "icons_symbols": "Color (symbols)",
   "icons_none": "None",
   "refresh_now": "Refresh now",
   "ups_load": "UPS load: {power}",

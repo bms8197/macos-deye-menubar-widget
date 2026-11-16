@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 — 2026-11-16
+
+- Menu bar: grid power next to PV, battery and home (positive = import, minus = export). During a grid outage the bolt-slash icon replaces the value.
+- New menu bar icon style **Color (symbols)**: SF Symbols with an individual color each, picked to stay readable on tinted menu bars (`barIcons: "symbols"`).
+
 ## 1.1.1 — 2026-11-16
 
 - Grid power is now shown exactly (e.g. "importing 17W") instead of "~0" below 20 W. New setting `thresholds.gridIdleWatts` (default 0); `idleWatts` now only applies to the battery.

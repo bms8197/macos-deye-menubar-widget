@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.1.1</xbar.version>
+# <xbar.version>v1.2.0</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -18,7 +18,7 @@ Usage:
   deye.<interval>.py --set-language XX  set UI language (code of a file in locales/, or "auto")
   deye.<interval>.py --dump-device      print all inverter data points (key, value, unit)
   deye.<interval>.py --set-interval 2m  change the refresh interval (renames this plugin file)
-  deye.<interval>.py --set-icons bar|menu mono|color|none   icon style (none: menu only)
+  deye.<interval>.py --set-icons bar|menu mono|color|none   icon style (bar also: symbols; none: menu only)
 
 Only the Python standard library is used.
 """
@@ -35,7 +35,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.1.1"
+VERSION = "1.2.0"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -455,12 +455,17 @@ def battery_symbol(soc):
     return "battery.0percent"
 
 
-ICON_SCOPES = {"bar": ("mono", "color"), "menu": ("mono", "color", "none")}
+ICON_SCOPES = {"bar": ("mono", "color", "symbols"), "menu": ("mono", "color", "none")}
+# Per-symbol colors for barIcons "symbols": "light menu bar,dark menu bar", picked to stay
+# readable on tinted menu bars (including red) without using red or orange.
+BAR_SYMBOL_COLORS = {"pv": "#D99A00,#FFD60A", "battery": "#1E9E52,#5EF2A0",
+                     "home": "#0A84FF,#64D2FF", "grid": "#A04BD6,#D6A2FF"}
 SECTION_COLORS = {"pv": "#FF9F0A", "home": "#0A84FF", "battery": "#30D158", "grid": "#BF5AF2"}
 
 
 def bar_icons(cfg):
-    """'mono' (SF Symbols that follow the menu bar text color) or 'color' (emoji)."""
+    """'mono' (SF Symbols that follow the menu bar text color), 'symbols' (SF Symbols with
+    individual colors) or 'color' (emoji)."""
     value = str(cfg.get("barIcons") or "").lower()
     if value not in ICON_SCOPES["bar"]:
         value = "color" if str(cfg.get("titleStyle") or "").lower() == "emoji" else "mono"
@@ -476,7 +481,7 @@ def menu_icons(cfg):
 def set_icons(scope, value):
     value = value.lower()
     if scope not in ICON_SCOPES or value not in ICON_SCOPES[scope]:
-        print("Usage: --set-icons bar mono|color  or  --set-icons menu mono|color|none",
+        print("Usage: --set-icons bar mono|symbols|color  or  --set-icons menu mono|color|none",
               file=sys.stderr)
         return 1
     cfg = load_config()
@@ -505,20 +510,23 @@ def build_title(cfg, s, soc_txt, arrow, is_low, stale, grid_down):
     """
     barIcons "mono" (default): monochrome SF Symbols that follow the menu bar text
     color, so they stay readable on tinted / inactive-display menu bars.
+    barIcons "symbols": the same SF Symbols, each with its own color (sfcolor, sfcolor2, ...).
     barIcons "color": colored emoji. (The legacy titleStyle "emoji" still works.)
     """
-    style = "emoji" if bar_icons(cfg) == "color" else "sf"
+    icons = bar_icons(cfg)
+    style = "emoji" if icons == "color" else "sf"
+    grid = s.get("grid")
+    # Grid power: positive = import, negative (shown with a minus) = export.
+    grid_txt = "–" if grid is None else ("-" if grid < 0 else "") + fmt_power(abs(grid))
     if style == "emoji":
-        title = f"☀️{fmt_power(s['pv'])} 🔋{soc_txt}{arrow} 🏠{fmt_power(s['load'])}"
-        if grid_down:
-            title += " 🔌✖"
+        title = (f"☀️{fmt_power(s['pv'])} 🔋{soc_txt}{arrow} 🏠{fmt_power(s['load'])} "
+                 + ("🔌✖" if grid_down else f"⚡{grid_txt}"))
         if stale:
             title += " ⏸"
     else:
         title = (f":sun.max.fill: {fmt_power(s['pv'])}  :{battery_symbol(s['soc'])}: {soc_txt}{arrow}"
-                 f"  :house.fill: {fmt_power(s['load'])}")
-        if grid_down:
-            title += "  :bolt.slash.fill:"
+                 f"  :house.fill: {fmt_power(s['load'])}  "
+                 + (":bolt.slash.fill:" if grid_down else f":bolt.fill: {grid_txt}"))
         if stale:
             title += "  :pause.circle:"
 
@@ -533,6 +541,11 @@ def build_title(cfg, s, soc_txt, arrow, is_low, stale, grid_down):
         params.append(f"font={cfg['titleFont']}")
     if cfg.get("titleSize"):
         params.append(f"size={cfg['titleSize']}")
+    if icons == "symbols" and not params:
+        colors = [BAR_SYMBOL_COLORS[k] for k in ("pv", "battery", "home", "grid")]
+        if stale:
+            colors.append("gray")
+        params += [f"sfcolor={colors[0]}"] + [f"sfcolor{i}={c}" for i, c in enumerate(colors[1:], 2)]
     params.append("symbolize=" + ("false" if style == "emoji" else "true"))
     return title + " | " + " ".join(params)
 
@@ -847,7 +860,8 @@ def menu_interval(cfg, t):
 
 def menu_icons_options(cfg, t):
     print(clean(t("icons")))
-    names = {"mono": t("icons_mono"), "color": t("icons_color"), "none": t("icons_none")}
+    names = {"mono": t("icons_mono"), "color": t("icons_color"), "none": t("icons_none"),
+             "symbols": t("icons_symbols")}
     for scope, label, current in (("bar", t("icons_bar"), bar_icons(cfg)),
                                   ("menu", t("icons_menu"), menu_icons(cfg))):
         print(f"--{clean(label)}")
