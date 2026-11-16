@@ -79,4 +79,3 @@ accounts `appSecret` and `passwordHash`.
 - `docs/menubar.png` and `docs/menu.png` are mockups rendered from the test fixture;
   replace them with real SwiftBar screenshots (no location or personal data).
 - LICENSE file comes from GitHub (MIT) with the maintainer's name.
-- First release: tag `v1.0.0` after the commit is pushed.

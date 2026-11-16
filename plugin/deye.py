@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.0.0</xbar.version>
+# <xbar.version>v1.0.1</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -18,6 +18,7 @@ Usage:
 
 Only the Python standard library is used.
 """
+import base64
 import glob
 import hashlib
 import json
@@ -30,7 +31,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -487,7 +488,12 @@ def section(text, cfg, symbol, color_key, color=None):
     if mode != "none":
         params = f" | sfimage={symbol}"
         if mode == "color":
-            params += f" sfcolor={color or SECTION_COLORS[color_key]}"
+            # sfcolor alone does not tint the item image in dropdown menus; SwiftBar needs a
+            # Palette rendering configuration (base64 JSON) for that.
+            c = color or SECTION_COLORS[color_key]
+            cfg_json = json.dumps({"renderingMode": "Palette", "colors": [c, c]},
+                                  separators=(",", ":"))
+            params += f" sfcolor={c} sfconfig={base64.b64encode(cfg_json.encode()).decode()}"
     return clean(text) + params
 
 

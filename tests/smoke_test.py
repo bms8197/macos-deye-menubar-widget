@@ -4,6 +4,7 @@ End-to-end smoke test: runs the plugin against a local mock of the Deye Cloud AP
 (fixture = real /device/latest data point names) and checks the SwiftBar output.
 Runs on Linux and macOS; no network and no Keychain needed.
 """
+import base64
 import http.server
 import json
 import os
@@ -126,8 +127,12 @@ def main():
            and "param1=--set-icons param2=menu param3=none" in out)
     code, _, _ = run("--set-icons", "menu", "color")
     _, out, _ = run()
-    expect("color menu icons", "sfimage=house.fill sfcolor=#0A84FF" in out
-           and "sfimage=sun.max.fill sfcolor=#FF9F0A" in out)
+    expect("color menu icons", "sfimage=house.fill sfcolor=#0A84FF sfconfig=" in out
+           and "sfimage=sun.max.fill sfcolor=#FF9F0A sfconfig=" in out)
+    cfg_b64 = out.split("sfimage=house.fill sfcolor=#0A84FF sfconfig=")[1].split()[0]
+    palette = json.loads(base64.b64decode(cfg_b64))
+    expect("palette config carries the color",
+           palette["renderingMode"] == "Palette" and palette["colors"][0] == "#0A84FF")
     code, _, _ = run("--set-icons", "bar", "color")
     _, out, _ = run()
     expect("color bar uses emoji", out.splitlines()[0].startswith("☀️") and "symbolize=false" in out.splitlines()[0])

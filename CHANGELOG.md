@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-11-16
+
+- Fixed: dropdown section icons stayed monochrome when set to **Color**. SwiftBar only tints
+  `sfimage` icons through an `sfconfig` palette, which the plugin now sends.
+- Tests: the palette configuration is decoded and checked in the smoke test.
+
 ## 1.0.0 — 2026-11-16
 
 First public release.
