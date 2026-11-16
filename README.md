@@ -102,7 +102,7 @@ The menu also contains:
 
 ### Refresh interval and rate limits
 
-The interval is part of the file name (`deye.1m.py` = every minute). Change it from the **Refresh interval** menu, or with `--set-interval`.
+The interval is part of the file name (`deye.5m.py` = every 5 minutes, the default and the interval of the Deye inverter itself). Change it from the **Refresh interval** menu, or with `--set-interval`.
 
 The Deye Cloud OpenAPI allows **100,000 calls per month** per developer account. Each refresh is one call, so the monthly usage with the Mac awake 24/7 is:
 
@@ -115,7 +115,7 @@ The Deye Cloud OpenAPI allows **100,000 calls per month** per developer account.
 
 The real number is lower, because SwiftBar does not run while the Mac sleeps. Logins happen only when the token expires, about every 60 days. Options that would exceed `monthlyQuota` are shown in red.
 
-By default (`dataSource: "device"`) each refresh makes **one** API request: the inverter's latest data provides both the menu bar values and all the details. The login token is cached for its full lifetime. If the inverter data can't be used, the plugin falls back to the station summary for that refresh. Deye is introducing quotas on the OpenAPI but does not publish exact limits. If you see `⏸` often with a rate-limit message, increase the interval to `2m` or `5m`.
+By default (`dataSource: "device"`) each refresh makes **one** API request: the inverter's latest data provides both the menu bar values and all the details. The login token is cached for its full lifetime. If the inverter data can't be used, the plugin falls back to the station summary for that refresh. Deye is introducing quotas on the OpenAPI but does not publish exact limits. If you see `⏸` often with a rate-limit message, increase the interval to `10m`.
 
 Also check the *Updated* line in the menu. If the data only changes every 5 minutes, refreshing every minute brings no new information.
 
@@ -199,12 +199,12 @@ Only the SHA-256 hash of the password is stored, because that is what the Deye A
 ## Command line
 
 ```bash
-~/SwiftBar/deye.1m.py                     # same output SwiftBar shows
-~/SwiftBar/deye.1m.py --check             # test login and list stations (JSON)
-~/SwiftBar/deye.1m.py --set-language ro   # change language
-~/SwiftBar/deye.1m.py --dump-device       # all inverter data points (key, value, unit)
-~/SwiftBar/deye.1m.py --set-interval 2m   # change refresh interval (renames the plugin file)
-~/SwiftBar/deye.1m.py --version
+~/SwiftBar/deye.5m.py                     # same output SwiftBar shows
+~/SwiftBar/deye.5m.py --check             # test login and list stations (JSON)
+~/SwiftBar/deye.5m.py --set-language ro   # change language
+~/SwiftBar/deye.5m.py --dump-device       # all inverter data points (key, value, unit)
+~/SwiftBar/deye.5m.py --set-interval 2m   # change refresh interval (renames the plugin file)
+~/SwiftBar/deye.5m.py --version
 ```
 
 ## Troubleshooting

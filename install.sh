@@ -13,7 +13,7 @@ KC_SERVICE="deye-menubar"
 SWIFTBAR_DOMAIN="com.ameba.SwiftBar"
 SWIFTBAR_APP="/Applications/SwiftBar.app"
 DEFAULT_PLUGIN_DIR="$HOME/SwiftBar"
-DEFAULT_INTERVAL="1m"
+DEFAULT_INTERVAL="5m"
 
 bold=$'\033[1m'; green=$'\033[32m'; yellow=$'\033[33m'; red=$'\033[31m'; reset=$'\033[0m'
 info() { printf '\n%s==> %s%s\n' "$bold" "$*" "$reset"; }
@@ -209,7 +209,7 @@ echo "Refresh interval examples: 30s, 1m, 2m, 5m"
 while :; do
   ask INTERVAL "Refresh interval" "${cur_interval:-$DEFAULT_INTERVAL}"
   [[ $INTERVAL =~ ^[0-9]+[smhd]$ ]] && break
-  warn "Use a number followed by s, m, h or d (e.g. 1m)."
+  warn "Use a number followed by s, m, h or d (e.g. 5m)."
 done
 
 DEYE_BASE="$BASE" DEYE_APPID="$APP_ID" DEYE_EMAIL="$EMAIL" DEYE_LANG="$LANGUAGE" \

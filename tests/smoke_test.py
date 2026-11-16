@@ -175,6 +175,10 @@ def main():
     _, out, _ = run()
     expect("stale indicator", "pause.circle" in out.splitlines()[0])
 
+    print("installer default")
+    expect("installer default interval is 5m",
+           'DEFAULT_INTERVAL="5m"' in (ROOT / "install.sh").read_text(encoding="utf-8"))
+
     print("--set-interval")
     code, _, _ = run("--set-interval", "5m")
     expect("plugin renamed", code == 0 and (plugin_dir / "deye.5m.py").exists() and not plugin.exists())

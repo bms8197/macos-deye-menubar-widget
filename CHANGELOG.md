@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 — 2026-11-16
+
+- Default refresh interval is now 5 minutes (the update interval of the Deye inverter itself), down from 1 minute: fewer API calls (~8,640 per month) with no loss of fresh data. Existing installs keep their current interval; change it any time from the **Refresh interval** menu.
+
 ## 1.0.1 — 2026-11-16
 
 - Fixed: dropdown section icons stayed monochrome when set to **Color**. SwiftBar only tints

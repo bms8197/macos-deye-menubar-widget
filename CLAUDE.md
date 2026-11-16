@@ -47,7 +47,7 @@ and UI default language are English.
 
 ## SwiftBar specifics
 
-- Refresh interval is in the file name (`deye.1m.py`); `--set-interval` renames the file.
+- Refresh interval is in the file name (`deye.5m.py`); `--set-interval` renames the file.
 - Item params used: `trim=false` (indented detail lines), `symbolize=true` with
   `:sf.symbol.name:` in the title, `checked=true`, `bash=… param1=… terminal=false`,
   `refresh=true`, `sfimage=` / `sfcolor=` on dropdown section headers. Escape `|` and
