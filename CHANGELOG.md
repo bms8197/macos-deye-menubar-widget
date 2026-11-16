@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1 — 2026-11-16
+
+- Documentation only: Romanian README (`README.ro.md`) with a language switch at the top of both READMEs.
+- README: the low battery color is `lowBatteryColor` (yellow by default), not red.
+
 ## 1.3.0 — 2026-11-16
 
 - Fewer API calls: a manual refresh or a menu setting change less than `minFetchSeconds` (default 60) after the last fetch now shows the cached data instead of calling the API. Scheduled runs are never skipped.
