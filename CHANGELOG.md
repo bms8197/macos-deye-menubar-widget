@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 — 2026-11-16
 
 - Fewer API calls: a manual refresh or a menu setting change less than `minFetchSeconds` (default 60) after the last fetch now shows the cached data instead of calling the API. Scheduled runs are never skipped.
 - On HTTP 429, 5xx or network errors the plugin no longer retries with the station endpoint; it shows the last data marked as stale and waits for the next scheduled refresh.
