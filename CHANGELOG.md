@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 — 2026-11-16
+
+- CI (Linux with Python 3.9 and 3.13, macOS) and an automated release workflow: pushing a `v*` tag runs the checks, builds `deye-menubar-<version>.zip` and publishes a GitHub release with the changelog section as notes.
+- The release zip leaves out tests, docs, scripts and CI files (`.gitattributes`).
+
 ## 1.2.0 — 2026-11-16
 
 - Menu bar: grid power next to PV, battery and home (positive = import, minus = export). During a grid outage the bolt-slash icon replaces the value.

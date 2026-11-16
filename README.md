@@ -249,7 +249,7 @@ Before opening a pull request, run `bash scripts/check.sh`. It runs the same che
 2. Commit and push to `main`. CI runs on Linux (Python 3.9 and 3.13) and macOS.
 3. Tag and push: `git tag v1.5.0 && git push --tags`.
 
-The release workflow checks that the tag matches `VERSION`, builds `deye-menubar-<version>.zip` (without tests, CI files and docs), and publishes a GitHub release with the changelog section as notes.
+The release workflow checks that the tag matches `VERSION`, builds `deye-menubar-<version>.zip` (without tests, scripts, CI files and docs), and publishes a GitHub release with the changelog section as notes.
 
 ## License
 
