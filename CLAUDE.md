@@ -77,6 +77,8 @@ accounts `appSecret` and `passwordHash`.
 - Every user-visible string goes through `t("key")`, with the key added to `en.json` and
   `ro.json`. Placeholders must match across locales (`scripts/check_locales.py` enforces this).
 - Any new feature gets a check in `tests/smoke_test.py`.
+- `README.md` (English) and `README.ro.md` (Romanian) mirror each other section by section.
+  Change both together; in the Romanian one, menu names follow `locales/ro.json`.
 - Never commit secrets, the inverter serial number, the station id, the account email,
   or the maintainer's name or location (screenshots included).
 - Releases: bump `VERSION`, add a `CHANGELOG.md` section, commit, then `git tag vX.Y.Z`.

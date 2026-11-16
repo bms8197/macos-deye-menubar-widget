@@ -1,5 +1,7 @@
 # Deye Menubar
 
+**English** | [Română](README.ro.md)
+
 ![macOS](https://img.shields.io/badge/macOS-12%2B-black?logo=apple)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue?logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -148,7 +150,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | Key | Description |
 |---|---|
 | `language` | `auto`, or a code from `~/.config/deye/locales/` (`en`, `ro`, …) |
-| `thresholds.lowBatteryPercent` | Below this SoC the title turns red |
+| `thresholds.lowBatteryPercent` | Below this SoC the title changes to `lowBatteryColor` (yellow by default) |
 | `thresholds.idleWatts` | Battery flows below this are shown as idle |
 | `thresholds.gridIdleWatts` | Grid flows up to this are shown as ~0. Default `0`: the exact grid power is always shown |
 | `invertBatterySign` | Set to `true` if charging and discharging appear reversed on your inverter |
