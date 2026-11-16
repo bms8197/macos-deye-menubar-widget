@@ -44,6 +44,13 @@ and UI default language are English.
   `Daily*` / `Total*` energy counters, `AC Temperature`, `MAIN`, `HMI`,
   `LithiumBatteryVersionNumber`. Data point names can differ on other models: always
   degrade gracefully (show nothing rather than crash) when a key is missing.
+- Battery state of health (SOH) is **not available** and is deliberately not shown. The
+  two `BATTERY` devices return an empty `deviceDataList` on `/device/latest` and
+  `2104005 device not supported` on `/device/measurePoints`; the inverter's data points
+  have no SOH key. Do not investigate this again.
+- A personal (non-business) account cannot read the inverter settings: `/config/tou`,
+  `/config/battery` and `/config/system` return `2101042 auth no operation permission`.
+  Work mode, TOU schedule and SoC limits therefore cannot be shown either.
 
 ## SwiftBar specifics
 
