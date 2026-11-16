@@ -76,6 +76,7 @@ accounts `appSecret` and `passwordHash`.
 
 ## Open items
 
-- `docs/menubar.png` and `docs/menu.png` are mockups rendered from the test fixture;
-  replace them with real SwiftBar screenshots (no location or personal data).
+- `docs/menubar.png` is a real SwiftBar screenshot. `docs/menu.png` is still a mockup
+  rendered from the test fixture; replace it with a real screenshot (no location or
+  personal data).
 - LICENSE file comes from GitHub (MIT) with the maintainer's name.
