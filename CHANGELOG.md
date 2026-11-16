@@ -1,0 +1,17 @@
+# Changelog
+
+## 1.0.0 — 2026-11-16
+
+First public release.
+
+- Menu bar: PV production, battery SoC with charge/discharge arrow, home consumption (SF Symbols or emoji).
+- Grid outage indicator based on the inverter's grid relay status.
+- Details per PV string and per phase (voltage, current, power) for load and grid.
+- Battery submenu: voltage, current, temperature, BMS values, capacity, stored energy, today/lifetime charge and discharge, estimated cycles, time to full / to reserve.
+- Energy today and lifetime totals submenus, with daily self-sufficiency.
+- Inverter submenu: output per phase, temperature, grid relay, rated power, firmware.
+- Icon style selectable from the menu (monochrome or color for the menu bar; monochrome, color or none for the dropdown).
+- Refresh interval and language selectable from the menu; API quota projection and local call counter.
+- One API call per refresh via `/device/latest`, with fallback to `/station/latest` and to cached data.
+- Installer (SwiftBar setup, Keychain credentials, station selection, login item) and uninstaller.
+- English and Romanian translations.

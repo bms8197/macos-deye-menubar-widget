@@ -1,0 +1,62 @@
+RatedPower	10000.00	W
+MAIN	2107-1172-1809
+HMI	1001-C057
+DCVoltagePV1	311.40	V
+DCVoltagePV2	339.90	V
+DCVoltagePV3	0.00	V
+DCVoltagePV4	0.00	V
+PVDailyPowerGenerationActive	3.30	kWh
+DCCurrentPV1	0.70	A
+DCCurrentPV2	0.90	A
+DCPowerPV1	255	W
+DCPowerPV2	338	W
+DCPowerPV3	0	W
+ACVoltageRUA	221.60	V
+TotalActiveProduction	4861.30	kWh
+DailyActiveProduction	3.30	kWh
+InverterOutputPowerL1	0	W
+InverterOutputPowerL2	7	W
+InverterOutputPowerL3	354	W
+TotalInverterOutputPower	361	W
+TotalSolarPower	593.00	W
+GridVoltageL1	222.00	V
+GridCurrentL1	0.64	A
+GridPowerL1	0	W
+GridVoltageL2	226.20	V
+GridCurrentL2	0.35	A
+GridPowerL2	4	W
+GridVoltageL3	228.70	V
+GridCurrentL3	0.67	A
+GridPowerL3	28	W
+GridStatus	Static
+GridFrequency	50.00	Hz
+TotalGridPower	32	W
+DailyGridFeedIn	0.00	kWh
+DailyEnergyPurchased	4.60	kWh
+TotalEnergyBuy	144.10	kWh
+TotalEnergySell	2135.30	kWh
+LoadVoltageL1	222.00	V
+LoadVoltageL2	228.80	V
+LoadVoltageL3	225.00	V
+LoadPowerL1	0	W
+LoadPowerL2	0	W
+LoadPowerL3	375	W
+TotalConsumptionPower	393	W
+DailyConsumption	7.20	kWh
+TotalConsumption	2443.10	kWh
+LoadFrequency	50.00	Hz
+BatteryVoltage	52.91	V
+BatteryCurrent1	-3.42	A
+BatteryPower	-166	W
+SOC	42	%
+TotalChargeEnergy	955.00	kWh
+TotalDischargeEnergy	1033.30	kWh
+DailyChargingEnergy	1.20	kWh
+DailyDischargingEnergy	0.50	kWh
+BatteryRatedCapacity	314	Ah
+BatteryTotalCurrent	-3.42	A
+BMSSOC	42	%
+Temperature- Battery	18.00	℃
+AC Temperature	42.30	℃
+GridRelayStatus	Pull-in
+UPSLoadPower	385	W
