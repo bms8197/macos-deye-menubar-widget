@@ -120,7 +120,7 @@ The real number is lower, because SwiftBar does not run while the Mac sleeps. Lo
 
 By default (`dataSource: "device"`) each refresh makes **one** API request: the inverter's latest data provides both the menu bar values and all the details. The login token is cached for its full lifetime. If the inverter data can't be used, the plugin falls back to the station summary for that refresh. Deye is introducing quotas on the OpenAPI but does not publish exact limits. If you see `⏸` often with a rate-limit message, increase the interval to `10m`.
 
-Also check the *Updated* line in the menu. If the data only changes every 5 minutes, refreshing every minute brings no new information.
+Also check the *Data from Deye* line in the menu, which shows when Deye measured the data (the *Updated* line at the bottom belongs to SwiftBar and only shows when it last ran the plugin). If the data only changes every 5 minutes, refreshing every minute brings no new information.
 
 ### Refresh schedule (optional)
 
@@ -176,6 +176,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | `detailsRefreshSeconds` | Station mode only: minimum time between inverter detail requests |
 | `minFetchSeconds` | Optional (default 60, `0` disables). A manual refresh or a menu setting change within this time of the last fetch shows the cached data instead of calling the API. Never applied to scheduled runs |
 | `schedule` | Optional time-of-day refresh, e.g. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` between the hours `from` and `to` (0-23, local time), `outside` the rest of the day. Off by default; see *Refresh schedule* |
+| `menuTextColor` | Color of the text in the dropdown. `auto` (default): high contrast, black in light mode and white in dark mode, with the detail lines slightly softer. `default`: the system's faded gray. Or a fixed color, e.g. `#FFFFFF` or `#000000,#FFFFFF` (light, dark) |
 | `titleFont` / `titleSize` | Optional font name (e.g. `SFMono-Regular`) and size for the title |
 
 Changes take effect on the next refresh.
@@ -231,7 +232,7 @@ Only the SHA-256 hash of the password is stored, because that is what the Deye A
 - **Login failed.** Verify appId, appSecret, e-mail and password, and the region (`eu1` vs `us1`). Confirm that the developer application has been approved.
 - **Values look wrong or show `–`.** Use *Show raw JSON* to see exactly what Deye returns for your station, then adjust the `invert…Sign` settings if needed.
 - **Hard to read on a second display or a tinted menu bar.** macOS dims the menu bar on the inactive display and tints it with the wallpaper. Keep `barIcons: "mono"` and an empty `titleColor`, and consider System Settings → Accessibility → Display → **Reduce transparency**, which gives the menu bar a solid background.
-- **Data is old.** The *Updated* line shows how old Deye's data is. If it keeps growing, the inverter's Wi-Fi logger has probably lost its connection to Deye Cloud.
+- **Data is old.** The *Data from Deye* line shows how old Deye's data is. If it keeps growing, the inverter's Wi-Fi logger has probably lost its connection to Deye Cloud.
 
 ## Uninstall
 

@@ -120,7 +120,7 @@ Numărul real e mai mic, pentru că SwiftBar nu rulează cât Mac-ul doarme. Aut
 
 Implicit (`dataSource: "device"`), fiecare actualizare face **o singură** cerere API: ultimele date ale invertorului oferă atât valorile din bara de meniu, cât și toate detaliile. Tokenul de autentificare este păstrat în cache pe toată durata de viață. Dacă datele invertorului nu pot fi folosite, pluginul trece la rezumatul stației pentru acea actualizare. Deye introduce cote pe OpenAPI, dar nu publică limite exacte. Dacă vezi des `⏸` cu un mesaj de limită depășită, mărește intervalul la `10m`.
 
-Verifică și linia *Actualizat* din meniu. Dacă datele se schimbă doar la 5 minute, o actualizare la fiecare minut nu aduce informații noi.
+Verifică și linia *Date de la Deye* din meniu, care arată când a măsurat Deye datele (linia *Updated* de jos aparține SwiftBar și arată doar când a rulat ultima dată pluginul). Dacă datele se schimbă doar la 5 minute, o actualizare la fiecare minut nu aduce informații noi.
 
 ### Program de actualizare (opțional)
 
@@ -176,6 +176,7 @@ Setările fără secrete sunt în `~/.config/deye/config.json`:
 | `detailsRefreshSeconds` | Doar în modul station: timpul minim între cererile de detalii ale invertorului |
 | `minFetchSeconds` | Opțional (implicit 60, `0` dezactivează). O actualizare manuală sau o schimbare de setare din meniu, la mai puțin de acest timp după ultima aducere de date, afișează datele din cache în loc să apeleze API-ul. Nu se aplică actualizărilor programate |
 | `schedule` | Opțional: actualizare după ora din zi, de ex. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` între orele `from` și `to` (0-23, ora locală), `outside` în restul zilei. Dezactivat implicit; vezi *Program de actualizare* |
+| `menuTextColor` | Culoarea textului din meniul derulant. `auto` (implicit): contrast ridicat, negru în modul luminos și alb în cel întunecat, cu liniile de detaliu puțin mai estompate. `default`: griul șters al sistemului. Sau o culoare fixă, de ex. `#FFFFFF` sau `#000000,#FFFFFF` (luminos, întunecat) |
 | `titleFont` / `titleSize` | Opțional: numele fontului (de ex. `SFMono-Regular`) și dimensiunea pentru titlu |
 
 Modificările se aplică la următoarea actualizare.
@@ -231,7 +232,7 @@ Se păstrează doar hash-ul SHA-256 al parolei, pentru că asta așteaptă API-u
 - **Autentificare eșuată.** Verifică appId, appSecret, e-mailul și parola, plus regiunea (`eu1` sau `us1`). Confirmă că aplicația de dezvoltator a fost aprobată.
 - **Valorile par greșite sau apare `–`.** Folosește *Arată JSON brut* ca să vezi exact ce returnează Deye pentru stația ta, apoi ajustează setările `invert…Sign` dacă e nevoie.
 - **Greu de citit pe al doilea ecran sau pe o bară de meniu colorată.** macOS întunecă bara de meniu pe ecranul inactiv și o colorează după wallpaper. Păstrează `barIcons: "mono"` și `titleColor` gol și ia în calcul Setări sistem → Accesibilitate → Ecran → **Reduce transparency**, care dă barei de meniu un fundal uni.
-- **Datele sunt vechi.** Linia *Actualizat* arată cât de vechi sunt datele Deye. Dacă vârsta continuă să crească, loggerul Wi-Fi al invertorului și-a pierdut probabil conexiunea la Deye Cloud.
+- **Datele sunt vechi.** Linia *Date de la Deye* arată cât de vechi sunt datele Deye. Dacă vârsta continuă să crească, loggerul Wi-Fi al invertorului și-a pierdut probabil conexiunea la Deye Cloud.
 
 ## Dezinstalare
 

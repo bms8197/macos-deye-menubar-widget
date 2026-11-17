@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 — 2026-11-17
+
+- Dropdown text is easier to read: rows without an action are disabled menu items, which macOS draws in faded gray, so they now get an explicit high-contrast color (`menuTextColor`: `auto`, `default` for the old look, or a fixed color). With colored dropdown icons, section titles take their icon's color.
+- The *Updated* line is now *Data from Deye* (*Date de la Deye*), so it is not confused with SwiftBar's own *Updated … ago* line at the bottom of the menu.
+
 ## 1.4.0 — 2026-11-17
 
 - Optional refresh schedule by time of day (menu: **Refresh interval ▸ Schedule by time of day**, config key `schedule`, CLI `--set-schedule`): for example 1 min from 07:00 to 21:00 and 5 min otherwise. Hours and both intervals are configurable; off by default. Outside the window the plugin skips the API call until the slower interval has passed.

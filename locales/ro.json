@@ -10,7 +10,7 @@
   "grid_export": "export {power}",
   "grid_import": "import {power}",
   "grid_idle": "~0 (autonom)",
-  "last_update": "Actualizat: {time} (acum {minutes} min)",
+  "last_update": "Date de la Deye: {time} (acum {minutes} min)",
   "stale_data": "Ultimele date cunoscute. Eroare API: {error}",
   "error": "Eroare: {error}",
   "not_configured": "Neconfigurat. Rulează install.sh",

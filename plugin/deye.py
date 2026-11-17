@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.4.0</xbar.version>
+# <xbar.version>v1.4.1</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -35,7 +35,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -325,8 +325,37 @@ def join(*parts):
     return " · ".join(p for p in parts if p)
 
 
+# Menu rows without an action are disabled items, which macOS draws in faded gray. An explicit
+# color is not faded. "light,dark" pairs follow the menu bar appearance.
+TEXT_COLORS = {"header": "#000000,#FFFFFF", "detail": "#3C3C43,#EBEBF0"}
+_text_colors = {"header": "", "detail": ""}
+_header_follows_icon = False      # "auto" + colored icons: header text gets the icon's color
+
+
+def use_text_colors(cfg):
+    """menuTextColor: "auto" (default, high contrast; section headers take the color of their
+    icon when the dropdown icons are colored), "default" (SwiftBar/macOS gray) or a fixed
+    color such as #FFFFFF or "#000000,#FFFFFF" (light,dark)."""
+    global _header_follows_icon
+    mode = str(cfg.get("menuTextColor") or "auto").strip()
+    _header_follows_icon = mode.lower() == "auto" and menu_icons(cfg) == "color"
+    for role in _text_colors:
+        _text_colors[role] = ("" if mode.lower() == "default" else
+                              TEXT_COLORS[role] if mode.lower() == "auto" else mode)
+
+
+def text_param(role, separator=" | "):
+    color = _text_colors[role]
+    return f"{separator}color={color}" if color else ""
+
+
+def row(text, prefix="--"):
+    """A non-clickable row inside a submenu."""
+    return f"{prefix}{clean(text)}{text_param('detail')}"
+
+
 def detail(text):
-    print(f"    {clean(text)} | trim=false size=12")
+    print(f"    {clean(text)} | trim=false size=12" + text_param("detail", " "))
 
 
 # ---------------------------------------------------------------- data sources
@@ -503,7 +532,7 @@ def set_icons(scope, value):
     return 0
 
 
-def section(text, cfg, symbol, color_key, color=None):
+def section(text, cfg, symbol, color_key, color=None, text_color=True):
     """Print a dropdown section header with an SF Symbol, if menu icons are enabled."""
     mode = menu_icons(cfg)
     params = ""
@@ -516,6 +545,9 @@ def section(text, cfg, symbol, color_key, color=None):
             cfg_json = json.dumps({"renderingMode": "Palette", "colors": [c, c]},
                                   separators=(",", ":"))
             params += f" sfcolor={c} sfconfig={base64.b64encode(cfg_json.encode()).decode()}"
+    header = (color or SECTION_COLORS[color_key]) if _header_follows_icon else _text_colors["header"]
+    if text_color and header:
+        params += (" " if params else " | ") + f"color={header}"
     return clean(text) + params
 
 
@@ -646,12 +678,12 @@ def submenu_energy(pt, t, header, keys, ratio=False):
         return
     print(clean(header))
     for label, value in rows:
-        print(f"--{clean(label)}: {fmt_energy(value)}")
+        print(row(f"{label}: {fmt_energy(value)}"))
     if ratio:
         cons, bought = pt.val("DailyConsumption"), pt.val("DailyEnergyPurchased")
         if cons and bought is not None:
             pct = max(0.0, min(100.0, (1 - bought / cons) * 100))
-            print(f"--{clean(t('self_sufficiency', percent=f'{pct:.0f}%'))}")
+            print(row(t('self_sufficiency', percent=f'{pct:.0f}%')))
 
 
 def submenu_inverter(pt, t):
@@ -680,8 +712,8 @@ def submenu_inverter(pt, t):
         rows.append(t("firmware", version=fw))
     if rows:
         print(clean(t("inverter")))
-        for row in rows:
-            print(f"--{clean(row)}")
+        for text in rows:
+            print(row(text))
 
 
 def battery_capacity_kwh(pt, cfg):
@@ -733,13 +765,14 @@ def submenu_battery(pt, cfg, t):
         rows.append(t("firmware", version=fw))
     if rows:
         print(clean(t("battery_menu")))
-        for row in rows:
-            print(f"--{clean(row)}")
+        for text in rows:
+            print(row(text))
 
 
 # ---------------------------------------------------------------- rendering
 
 def render(s, cfg, t, dev=None, stale_error=None):
+    use_text_colors(cfg)
     th = cfg.get("thresholds") or {}
     low_battery = float(th.get("lowBatteryPercent", 20))
     idle = float(th.get("idleWatts", 20))               # battery flows below this are "idle"
@@ -787,7 +820,7 @@ def render(s, cfg, t, dev=None, stale_error=None):
     details_battery(pt, cfg, s, t)
     grid_line = section(t("grid", state=grid_state), cfg,
                         "bolt.slash.fill" if grid_down else "bolt.fill", "grid",
-                        "#FF453A" if grid_down else None)
+                        "#FF453A" if grid_down else None, text_color=not grid_down)
     if grid_down:
         grid_line += (" " if "|" in grid_line else " | ") + "color=red"
     print(grid_line)
@@ -796,7 +829,7 @@ def render(s, cfg, t, dev=None, stale_error=None):
     if updated:
         age = max(0, int(time.time() - updated) // 60)
         print(clean(t("last_update", time=time.strftime("%H:%M", time.localtime(updated)),
-                      minutes=age)))
+                      minutes=age)))     # left to the system: faded gray, secondary info
     if pt.p:
         print("---")
         submenu_energy(pt, t, t("energy_today"), ENERGY_TODAY, ratio=True)

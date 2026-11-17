@@ -11,7 +11,7 @@
   "grid_export": "exporting {power}",
   "grid_import": "importing {power}",
   "grid_idle": "~0 (self-sufficient)",
-  "last_update": "Updated: {time} ({minutes} min ago)",
+  "last_update": "Data from Deye: {time} ({minutes} min ago)",
   "stale_data": "Showing last known data. API error: {error}",
   "error": "Error: {error}",
   "not_configured": "Not configured. Run install.sh",

@@ -125,8 +125,24 @@ def main():
 
     print("icons")
     expect("default: mono bar", out.splitlines()[0].startswith(":sun.max.fill:"))
-    expect("default: mono menu icons", "Solar production: 593W | sfimage=sun.max.fill\n" in out
+    expect("default: mono menu icons",
+           "Solar production: 593W | sfimage=sun.max.fill color=#000000,#FFFFFF\n" in out
            and "sfcolor" not in main_menu)
+    expect("non-clickable rows get a readable color",
+           "PV1: 255W" in out and "    PV1: 255W" in main_menu
+           and any(l.startswith("    PV1:") and l.endswith("color=#3C3C43,#EBEBF0")
+                   for l in out.splitlines())
+           and any(l.startswith("Data from Deye:") and "color=" not in l for l in out.splitlines()))
+    cfg_text = json.loads((cfg_dir / "config.json").read_text())
+    (cfg_dir / "config.json").write_text(json.dumps(dict(cfg_text, menuTextColor="default")))
+    _, out_default, _ = run()
+    expect("menuTextColor default keeps the system look",
+           "Solar production: 593W | sfimage=sun.max.fill\n" in out_default
+           and "color=#3C3C43" not in out_default)
+    (cfg_dir / "config.json").write_text(json.dumps(dict(cfg_text, menuTextColor="#FFFFFF")))
+    _, out_fixed, _ = run()
+    expect("menuTextColor accepts a fixed color", "sfimage=sun.max.fill color=#FFFFFF\n" in out_fixed)
+    (cfg_dir / "config.json").write_text(json.dumps(cfg_text))
     expect("icons menu present", "\nIcons\n--Menu bar\n----Monochrome" in out
            and "param1=--set-icons param2=menu param3=none" in out)
     code, _, _ = run("--set-icons", "menu", "color")
@@ -137,6 +153,12 @@ def main():
     palette = json.loads(base64.b64decode(cfg_b64))
     expect("palette config carries the color",
            palette["renderingMode"] == "Palette" and palette["colors"][0] == "#0A84FF")
+    expect("section headers take the icon color",
+           any(l.startswith("Home consumption:") and l.endswith(" color=#0A84FF") for l in out.splitlines())
+           and any(l.startswith("Solar production:") and l.endswith(" color=#FF9F0A")
+                   for l in out.splitlines())
+           and any(l.startswith("    UPS load:") and l.endswith("color=#3C3C43,#EBEBF0")
+                   for l in out.splitlines()))
     code, _, _ = run("--set-icons", "bar", "color")
     _, out, _ = run()
     expect("color bar uses emoji", out.splitlines()[0].startswith("☀️") and "symbolize=false" in out.splitlines()[0])
