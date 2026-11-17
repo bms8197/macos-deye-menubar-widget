@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.3.1</xbar.version>
+# <xbar.version>v1.4.0</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -35,14 +35,19 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
 LAST_FILE = os.path.join(CFG_DIR, "last.json")
 DEVICE_FILE = os.path.join(CFG_DIR, "device.json")
 USAGE_FILE = os.path.join(CFG_DIR, "usage.json")
+STATE_FILE = os.path.join(CFG_DIR, "state.json")
 INTERVALS = ["30s", "1m", "2m", "5m", "10m", "15m"]
+# Optional time-of-day schedule: a fast interval inside a daily window, a slow one outside.
+SCHEDULE_DEFAULTS = {"enabled": False, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}
+SCHEDULE_INSIDE_OPTIONS = ["30s", "1m", "2m", "5m"]
+SCHEDULE_OUTSIDE_OPTIONS = ["1m", "2m", "5m", "10m", "15m"]
 DEFAULT_QUOTA = 100000
 MIN_FETCH_SECONDS = 60       # config "minFetchSeconds": reuse cached data younger than this
 LOCALE_DIR = os.path.join(CFG_DIR, "locales")
@@ -824,36 +829,194 @@ def interval_label(iv):
     return f"{n} {'sec' if unit == 's' else 'min' if unit == 'm' else unit}"
 
 
-def set_interval(iv):
-    if not re.match(r"^[0-9]+[smhd]$", iv) or interval_seconds(iv) < 10:
-        print(f"Invalid interval '{iv}' (examples: 30s, 1m, 5m)", file=sys.stderr)
-        return 1
+def valid_interval(iv):
+    return bool(re.match(r"^[0-9]+[smhd]$", str(iv))) and interval_seconds(iv) >= 10
+
+
+def rename_interval(iv):
+    """The interval is part of the plugin's file name; SwiftBar picks the rename up."""
     if current_interval() == iv:
-        return 0
-    target = os.path.join(os.path.dirname(SELF), f"deye.{iv}.py")
-    os.rename(SELF, target)
+        return
+    os.rename(SELF, os.path.join(os.path.dirname(SELF), f"deye.{iv}.py"))
     try:
         subprocess.run(["/usr/bin/open", "-g", "swiftbar://refreshallplugins"],
                        capture_output=True, timeout=10)
     except Exception:
         pass
+
+
+def set_interval(iv):
+    """Same interval all day: also turns the time-of-day schedule off."""
+    if not valid_interval(iv):
+        print(f"Invalid interval '{iv}' (examples: 30s, 1m, 5m)", file=sys.stderr)
+        return 1
+    try:
+        cfg = load_config()
+        if schedule_cfg(cfg)["enabled"]:
+            cfg["schedule"] = dict(schedule_cfg(cfg), enabled=False)
+            write_private(CFG_FILE, cfg)
+    except ConfigError:
+        pass
+    rename_interval(iv)
     return 0
+
+
+# ---------------------------------------------------------------- schedule
+
+def schedule_cfg(cfg):
+    """The schedule settings with defaults filled in and invalid values replaced."""
+    s = dict(SCHEDULE_DEFAULTS)
+    raw = cfg.get("schedule")
+    if isinstance(raw, dict):
+        for key in ("from", "to"):
+            if isinstance(raw.get(key), int) and not isinstance(raw.get(key), bool) \
+                    and 0 <= raw[key] <= 23:
+                s[key] = raw[key]
+        for key in ("inside", "outside"):
+            if valid_interval(raw.get(key)):
+                s[key] = raw[key]
+        s["enabled"] = raw.get("enabled") is True
+    return s
+
+
+def window_hours(s):
+    return (s["to"] - s["from"]) % 24 or 24      # from == to: the whole day
+
+
+def schedule_interval(s, now=None):
+    """Interval that applies right now: 'inside' during the daily window, else 'outside'."""
+    now = now or time.localtime()
+    hour = now.tm_hour + now.tm_min / 60
+    return s["inside"] if (hour - s["from"]) % 24 < window_hours(s) else s["outside"]
+
+
+def schedule_calls_per_month(s):
+    width = window_hours(s)
+    per_day = (width * 3600 / interval_seconds(s["inside"])
+               + (24 - width) * 3600 / interval_seconds(s["outside"]))
+    return 30 * per_day
+
+
+def schedule_file_interval(s):
+    """SwiftBar runs the plugin at the faster of the two intervals; the slower one is
+    enforced by skipping the API call (see fetch_due)."""
+    return min((s["inside"], s["outside"]), key=interval_seconds)
+
+
+def read_state():
+    try:
+        return read_json(STATE_FILE)
+    except Exception:
+        return {}
+
+
+def write_state(error=""):
+    try:
+        write_private(STATE_FILE, {"attempt": time.time(), "error": error})
+    except Exception:
+        pass
+
+
+def fetch_due(cfg):
+    """Without a schedule every run fetches. With one, a run fetches only if the interval
+    of the current period has passed since the last attempt (half a run of tolerance, so
+    a 5 min period with a 1 min plugin interval fetches on the 5th run, not the 4th)."""
+    s = schedule_cfg(cfg)
+    if not s["enabled"]:
+        return True
+    iv = current_interval()
+    run_every = interval_seconds(iv) if iv else 60
+    age = time.time() - float(read_state().get("attempt", 0) or 0)
+    return age < 0 or age >= interval_seconds(schedule_interval(s)) - run_every / 2
+
+
+def refresh_now():
+    """'Refresh now' from the menu: the next run fetches even outside the schedule."""
+    try:
+        write_private(STATE_FILE, dict(read_state(), attempt=0))
+    except Exception:
+        pass
+    return 0
+
+
+def set_schedule(key, value):
+    usage = ("Usage: --set-schedule enabled on|off | from|to 0-23 | "
+             "inside|outside <interval, e.g. 1m>")
+    try:
+        cfg = load_config()
+    except ConfigError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    s = schedule_cfg(cfg)
+    if key == "enabled" and value in ("on", "off"):
+        s["enabled"] = value == "on"
+    elif key in ("from", "to") and value.isdigit() and 0 <= int(value) <= 23:
+        s[key] = int(value)
+    elif key in ("inside", "outside") and valid_interval(value):
+        s[key] = value
+    else:
+        print(usage, file=sys.stderr)
+        return 1
+    cfg["schedule"] = s
+    write_private(CFG_FILE, cfg)
+    if s["enabled"]:
+        rename_interval(schedule_file_interval(s))
+    return 0
+
+
+def sched_title(s, t):
+    """Short summary, e.g. 'Refresh: 07:00–21:00 (1m), else 5m'."""
+    return t("sched_title", start=f"{s['from']:02d}:00", end=f"{s['to']:02d}:00",
+             inside=s["inside"], outside=s["outside"])
+
+
+def menu_schedule(cfg, t, quota):
+    s = schedule_cfg(cfg)
+    hours = lambda h: f"{h:02d}:00"
+    on = s["enabled"]
+    print(f"--{clean(t('sched_menu'))}" + (" | checked=true" if on else ""))
+    print(f'----{clean(t("sched_enabled"))} | bash="{SELF}" param1=--set-schedule param2=enabled '
+          f'param3={"off" if on else "on"} terminal=false refresh=true' + (" checked=true" if on else ""))
+    calls = schedule_calls_per_month(s)
+    print(f"----{clean(sched_title(s, t))} | size=12")
+    print(f"----{clean(t('api_projection', calls=fmt_count(calls), quota=fmt_count(quota)))} | size=12"
+          + (" color=red" if calls > quota else ""))
+    print("-------")
+    for key, label_key, options in (("inside", "sched_inside", SCHEDULE_INSIDE_OPTIONS),
+                                    ("outside", "sched_outside", SCHEDULE_OUTSIDE_OPTIONS)):
+        print(f"----{clean(t(label_key, label=interval_label(s[key])))}")
+        for iv in options:
+            mark = " checked=true" if iv == s[key] else ""
+            print(f'------{clean(interval_label(iv))} | bash="{SELF}" param1=--set-schedule '
+                  f'param2={key} param3={iv} terminal=false refresh=true{mark}')
+    for key, label_key in (("from", "sched_from"), ("to", "sched_to")):
+        print(f"----{clean(t(label_key, hour=hours(s[key])))}")
+        for h in range(24):
+            mark = " checked=true" if h == s[key] else ""
+            print(f'------{hours(h)} | bash="{SELF}" param1=--set-schedule param2={key} '
+                  f'param3={h} terminal=false refresh=true{mark}')
 
 
 def menu_interval(cfg, t):
     quota = int(cfg.get("monthlyQuota", DEFAULT_QUOTA))
     current = current_interval()
-    print(clean(t("refresh_interval")) + (f": {interval_label(current)}" if current else ""))
+    s = schedule_cfg(cfg)
+    if s["enabled"]:
+        print(clean(sched_title(s, t)))
+    else:
+        print(clean(t("refresh_interval")) + (f": {interval_label(current)}" if current else ""))
     options = INTERVALS if current in INTERVALS or not current else INTERVALS + [current]
     for iv in options:
         calls = calls_per_month(iv)
         params = ["terminal=false", "refresh=false"]
-        if iv == current:
+        if iv == current and not s["enabled"]:
             params.append("checked=true")
         if calls > quota:
             params.append("color=red")
         print(f'--{clean(t("interval_option", label=interval_label(iv), calls=fmt_count(calls)))} | '
               f'bash="{SELF}" param1=--set-interval param2={iv} ' + " ".join(params))
+    print("-----")
+    menu_schedule(cfg, t, quota)
     print("-----")
     try:
         usage = read_json(USAGE_FILE)
@@ -861,8 +1024,9 @@ def menu_interval(cfg, t):
             print(f'--{clean(t("api_usage", count=usage.get("count", 0)))} | size=12')
     except Exception:
         pass
-    if current:
-        print(f'--{clean(t("api_projection", calls=fmt_count(calls_per_month(current)), quota=fmt_count(quota)))} | size=12')
+    calls = schedule_calls_per_month(s) if s["enabled"] else (calls_per_month(current) if current else None)
+    if calls is not None:
+        print(f'--{clean(t("api_projection", calls=fmt_count(calls), quota=fmt_count(quota)))} | size=12')
     print(f'--{clean(t("api_note"))} | size=11 color=gray')
 
 
@@ -894,7 +1058,7 @@ def menu_footer(cfg, t):
         checked = " checked=true" if code == current else ""
         print(f'--{clean(name)} | bash="{SELF}" param1=--set-language param2={code} '
               f'terminal=false refresh=true{checked}')
-    print(f"{clean(t('refresh_now'))} | refresh=true")
+    print(f'{clean(t("refresh_now"))} | bash="{SELF}" param1=--refresh-now terminal=false refresh=true')
     print(f"Deye Menubar v{VERSION} | size=11 color=gray")
 
 
@@ -1009,13 +1173,24 @@ def run():
     if cached:
         render(cached, cfg, t, dev=cached_device())
         return 0
+    if not fetch_due(cfg):                    # time-of-day schedule: not due yet, show the cache
+        try:
+            last = read_json(LAST_FILE)
+            if "source" in last:
+                render(last, cfg, t, dev=cached_device(),
+                       stale_error=read_state().get("error") or None)
+                return 0
+        except Exception:
+            pass
     try:
         summary, dev = collect(cfg)
         write_private(LAST_FILE, summary)
+        write_state()
         render(summary, cfg, t, dev=dev)
     except ConfigError:
         render_not_configured(t)
     except Exception as e:
+        write_state(str(e))
         try:
             last = read_json(LAST_FILE)
             if "source" not in last:              # v1.0-1.2 stored the raw station response
@@ -1036,6 +1211,10 @@ def main():
         return set_icons(args[1], args[2])
     if args[:1] == ["--set-interval"] and len(args) > 1:
         return set_interval(args[1])
+    if args[:1] == ["--set-schedule"] and len(args) > 2:
+        return set_schedule(args[1], args[2].lower())
+    if args[:1] == ["--refresh-now"]:
+        return refresh_now()
     if args[:1] == ["--dump-device"]:
         try:
             return dump_device()

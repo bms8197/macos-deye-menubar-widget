@@ -64,5 +64,12 @@
   "interval_option": "{label}  (~{calls} calls/month)",
   "api_usage": "API calls this month (this Mac): {count}",
   "api_projection": "At this interval: ~{calls} of {quota} calls/month",
-  "api_note": "Estimate assumes the Mac is awake 24/7"
+  "api_note": "Estimate assumes the Mac is awake 24/7",
+  "sched_menu": "Schedule by time of day",
+  "sched_enabled": "Use a schedule",
+  "sched_inside": "Inside the window: {label}",
+  "sched_outside": "Outside the window: {label}",
+  "sched_from": "From: {hour}",
+  "sched_to": "Until: {hour}",
+  "sched_title": "Refresh: {start}–{end} ({inside}), else {outside}"
 }

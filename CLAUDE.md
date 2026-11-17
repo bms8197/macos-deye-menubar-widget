@@ -55,6 +55,9 @@ and UI default language are English.
 ## SwiftBar specifics
 
 - Refresh interval is in the file name (`deye.5m.py`); `--set-interval` renames the file.
+  The optional time-of-day schedule (`schedule` in config.json, `--set-schedule`) keeps the
+  file name at the faster interval and skips the API call outside the window (`fetch_due`,
+  based on `state.json`). `--refresh-now` (menu "Refresh now") bypasses that skip.
 - Item params used: `trim=false` (indented detail lines), `symbolize=true` with
   `:sf.symbol.name:` in the title, `checked=true`, `bash=… param1=… terminal=false`,
   `refresh=true`, `sfimage=` / `sfcolor=` on dropdown section headers. Escape `|` and
@@ -68,7 +71,7 @@ and UI default language are English.
 ## Runtime files (never commit)
 
 `~/.config/deye/`: `config.json` (no secrets), `token.json`, `last.json`, `device.json`,
-`usage.json`, `locales/`, `backup/`. Secrets live in the Keychain, service `deye-menubar`,
+`usage.json`, `state.json`, `locales/`, `backup/`. Secrets live in the Keychain, service `deye-menubar`,
 accounts `appSecret` and `passwordHash`.
 
 ## Rules

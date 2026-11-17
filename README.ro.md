@@ -122,6 +122,15 @@ Implicit (`dataSource: "device"`), fiecare actualizare face **o singură** cerer
 
 Verifică și linia *Actualizat* din meniu. Dacă datele se schimbă doar la 5 minute, o actualizare la fiecare minut nu aduce informații noi.
 
+### Program de actualizare (opțional)
+
+Ca să actualizezi des cât ești prin preajmă și rar noaptea, activează **Interval actualizare ▸ Program pe ore ▸ Folosește program orar**. Valorile implicite sunt **1 min între 07:00 și 21:00** și **5 min în rest**; orele intervalului și ambele intervale se schimbă din același submeniu. Funcționează și un interval care trece de miezul nopții (de exemplu 22:00 – 06:00).
+
+- SwiftBar rulează pluginul la cel mai rapid dintre cele două intervale; în afara intervalului orar pluginul sare peste apelul API până trece intervalul mai lent, deci cota numără doar apelurile reale. Cu valorile implicite sunt cam 29.000 de apeluri pe lună, față de 43.200 la 1 min constant.
+- Dacă alegi un interval din lista simplă (**30 sec … 15 min**), programul se oprește și acel interval se folosește toată ziua.
+- **Actualizează acum** aduce mereu date noi, și în afara intervalului orar.
+- Orele urmează ora locală a Mac-ului. Aceleași setări sunt în `config.json`, la cheia `schedule`, iar în linia de comandă există `--set-schedule`.
+
 ## Configurare
 
 Setările fără secrete sunt în `~/.config/deye/config.json`:
@@ -166,6 +175,7 @@ Setările fără secrete sunt în `~/.config/deye/config.json`:
 | `showDetails` | Doar în modul station: `false` dezactivează detaliile invertorului și cererea suplimentară pentru ele |
 | `detailsRefreshSeconds` | Doar în modul station: timpul minim între cererile de detalii ale invertorului |
 | `minFetchSeconds` | Opțional (implicit 60, `0` dezactivează). O actualizare manuală sau o schimbare de setare din meniu, la mai puțin de acest timp după ultima aducere de date, afișează datele din cache în loc să apeleze API-ul. Nu se aplică actualizărilor programate |
+| `schedule` | Opțional: actualizare după ora din zi, de ex. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` între orele `from` și `to` (0-23, ora locală), `outside` în restul zilei. Dezactivat implicit; vezi *Program de actualizare* |
 | `titleFont` / `titleSize` | Opțional: numele fontului (de ex. `SFMono-Regular`) și dimensiunea pentru titlu |
 
 Modificările se aplică la următoarea actualizare.
@@ -196,6 +206,7 @@ Ca să incluzi o traducere în pachet, adaugă fișierul și în `locales/` din 
 | `~/.config/deye/last.json` | Ultimul rezumat reușit, folosit când API-ul nu e disponibil |
 | `~/.config/deye/device.json` | Ultimele date ale invertorului (deschise de *Arată JSON brut*) |
 | `~/.config/deye/usage.json` | Contor local de apeluri API pentru luna curentă |
+| `~/.config/deye/state.json` | Ora și rezultatul ultimei încercări de aducere a datelor (folosit de programul de actualizare) |
 | `~/.config/deye/backup/` | Versiunile anterioare ale pluginului, înlocuite de installer |
 | Keychain, serviciul `deye-menubar` | `appSecret` și hash-ul SHA-256 al parolei |
 
@@ -208,7 +219,8 @@ Se păstrează doar hash-ul SHA-256 al parolei, pentru că asta așteaptă API-u
 ~/SwiftBar/deye.5m.py --check             # testează autentificarea și listează stațiile (JSON)
 ~/SwiftBar/deye.5m.py --set-language ro   # schimbă limba
 ~/SwiftBar/deye.5m.py --dump-device       # toate punctele de date ale invertorului (cheie, valoare, unitate)
-~/SwiftBar/deye.5m.py --set-interval 2m   # schimbă intervalul de actualizare (redenumește fișierul pluginului)
+~/SwiftBar/deye.5m.py --set-interval 2m   # același interval toată ziua (redenumește fișierul pluginului, oprește programul)
+~/SwiftBar/deye.5m.py --set-schedule enabled on   # program orar; și: from|to 0-23, inside|outside 1m
 ~/SwiftBar/deye.5m.py --version
 ```
 

@@ -63,5 +63,12 @@
   "interval_option": "{label}  (~{calls} apeluri/lună)",
   "api_usage": "Apeluri API luna asta (acest Mac): {count}",
   "api_projection": "La acest interval: ~{calls} din {quota} apeluri/lună",
-  "api_note": "Estimare pentru Mac pornit 24/7"
+  "api_note": "Estimare pentru Mac pornit 24/7",
+  "sched_menu": "Program pe ore",
+  "sched_enabled": "Folosește program orar",
+  "sched_inside": "În interval: {label}",
+  "sched_outside": "În afara intervalului: {label}",
+  "sched_from": "De la: {hour}",
+  "sched_to": "Până la: {hour}",
+  "sched_title": "Actualizare: {start}–{end} ({inside}), în rest {outside}"
 }

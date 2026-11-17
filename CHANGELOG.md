@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 — 2026-11-17
+
+- Optional refresh schedule by time of day (menu: **Refresh interval ▸ Schedule by time of day**, config key `schedule`, CLI `--set-schedule`): for example 1 min from 07:00 to 21:00 and 5 min otherwise. Hours and both intervals are configurable; off by default. Outside the window the plugin skips the API call until the slower interval has passed.
+- **Refresh now** always fetches, also when a schedule is active. Picking an interval from the plain list turns the schedule off.
+- New runtime file `~/.config/deye/state.json` (time and result of the last fetch attempt).
+
 ## 1.3.1 — 2026-11-16
 
 - Documentation only: Romanian README (`README.ro.md`) with a language switch at the top of both READMEs.

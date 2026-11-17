@@ -122,6 +122,15 @@ By default (`dataSource: "device"`) each refresh makes **one** API request: the 
 
 Also check the *Updated* line in the menu. If the data only changes every 5 minutes, refreshing every minute brings no new information.
 
+### Refresh schedule (optional)
+
+To refresh often while you are around and rarely at night, turn on **Refresh interval ▸ Schedule by time of day ▸ Use a schedule**. The defaults are **1 min from 07:00 to 21:00** and **5 min otherwise**; the window hours and both intervals can be changed from the same submenu. A window that crosses midnight (for example 22:00 to 06:00) works too.
+
+- SwiftBar runs the plugin at the faster of the two intervals; outside the window the plugin skips the API call until the slower interval has passed, so the quota only counts real calls. With the defaults that is about 29,000 calls per month instead of 43,200 at a constant 1 min.
+- Picking an interval from the plain list (**30 sec … 15 min**) turns the schedule off and uses that interval all day.
+- **Refresh now** always fetches, also outside the window.
+- The hours follow the Mac's local time. The same settings live under `schedule` in `config.json`, and the CLI has `--set-schedule`.
+
 ## Configuration
 
 Non-secret settings are in `~/.config/deye/config.json`:
@@ -166,6 +175,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | `showDetails` | Station mode only: `false` disables the inverter details and their extra request |
 | `detailsRefreshSeconds` | Station mode only: minimum time between inverter detail requests |
 | `minFetchSeconds` | Optional (default 60, `0` disables). A manual refresh or a menu setting change within this time of the last fetch shows the cached data instead of calling the API. Never applied to scheduled runs |
+| `schedule` | Optional time-of-day refresh, e.g. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` between the hours `from` and `to` (0-23, local time), `outside` the rest of the day. Off by default; see *Refresh schedule* |
 | `titleFont` / `titleSize` | Optional font name (e.g. `SFMono-Regular`) and size for the title |
 
 Changes take effect on the next refresh.
@@ -196,6 +206,7 @@ To ship a translation with the package, also add the file to `locales/` in this 
 | `~/.config/deye/last.json` | Last successful summary, used when the API is unavailable |
 | `~/.config/deye/device.json` | Last inverter data (opened by *Show raw JSON*) |
 | `~/.config/deye/usage.json` | Local API call counter for the current month |
+| `~/.config/deye/state.json` | Time and result of the last fetch attempt (used by the refresh schedule) |
 | `~/.config/deye/backup/` | Previous plugin versions replaced by the installer |
 | Keychain, service `deye-menubar` | `appSecret` and the SHA-256 hash of the password |
 
@@ -208,7 +219,8 @@ Only the SHA-256 hash of the password is stored, because that is what the Deye A
 ~/SwiftBar/deye.5m.py --check             # test login and list stations (JSON)
 ~/SwiftBar/deye.5m.py --set-language ro   # change language
 ~/SwiftBar/deye.5m.py --dump-device       # all inverter data points (key, value, unit)
-~/SwiftBar/deye.5m.py --set-interval 2m   # change refresh interval (renames the plugin file)
+~/SwiftBar/deye.5m.py --set-interval 2m   # same interval all day (renames the plugin file, turns the schedule off)
+~/SwiftBar/deye.5m.py --set-schedule enabled on   # time-of-day schedule; also: from|to 0-23, inside|outside 1m
 ~/SwiftBar/deye.5m.py --version
 ```
 

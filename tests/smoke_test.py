@@ -208,6 +208,58 @@ def main():
     run()
     expect("minFetchSeconds 0 fetches again", api_count() == before + 1)
 
+    print("time-of-day schedule")
+    import time as _time
+    hour = _time.localtime().tm_hour
+    inside_from, inside_to = hour, (hour + 12) % 24          # now is inside this window
+    outside_from, outside_to = (hour + 6) % 24, (hour + 18) % 24   # now is outside
+    state_file = cfg_dir / "state.json"
+
+    def set_attempt_age(seconds):
+        state_file.write_text(json.dumps({"attempt": _time.time() - seconds, "error": ""}))
+
+    cfg = json.loads((cfg_dir / "config.json").read_text())
+    _, out, _ = run()
+    expect("schedule is off by default", "\n--Schedule by time of day\n----Use a schedule | " in out
+           and "Refresh interval: 1 min\n" in out)
+    expect("invalid schedule setting rejected", run("--set-schedule", "from", "24")[0] == 1
+           and run("--set-schedule", "inside", "soon")[0] == 1 and run("--set-schedule", "x", "1")[0] == 1)
+    for key, value in (("from", str(inside_from)), ("to", str(inside_to)),
+                       ("inside", "1m"), ("outside", "5m"), ("enabled", "on")):
+        run("--set-schedule", key, value)
+    sch = json.loads((cfg_dir / "config.json").read_text())["schedule"]
+    expect("schedule saved", sch == {"enabled": True, "from": inside_from, "to": inside_to,
+                                     "inside": "1m", "outside": "5m"})
+    set_attempt_age(40)
+    before = api_count()
+    run()
+    expect("inside the window: fetches every run", api_count() == before + 1)
+    run("--set-schedule", "from", str(outside_from))
+    run("--set-schedule", "to", str(outside_to))
+    set_attempt_age(100)
+    before = api_count()
+    _, out, _ = run()
+    expect("outside the window: no call before the slow interval", api_count() == before
+           and "593W" in out.splitlines()[0])
+    set_attempt_age(290)
+    run()
+    expect("outside the window: fetches after the slow interval", api_count() == before + 1)
+    set_attempt_age(100)
+    run("--refresh-now")
+    run()
+    expect("Refresh now fetches outside the schedule", api_count() == before + 2)
+    _, out, _ = run()
+    expect("schedule shown in the menu", f"Refresh: {outside_from:02d}:00–{outside_to:02d}:00 (1m), else 5m" in out
+           and "Inside the window: 1 min" in out and "param1=--refresh-now" in out
+           and f"param1=--set-schedule param2=from param3={inside_from} " in out)
+    run("--set-interval", "2m")
+    expect("--set-interval turns the schedule off", json.loads(
+        (cfg_dir / "config.json").read_text())["schedule"]["enabled"] is False
+        and (plugin_dir / "deye.2m.py").exists())
+    (plugin_dir / "deye.2m.py").rename(plugin)
+    (cfg_dir / "config.json").write_text(json.dumps(cfg))
+    state_file.unlink()
+
     print("fallback to station when device data fails")
     STATE["fail_device"], STATE["fail_code"] = True, "2101999"
     _, out, _ = run()
