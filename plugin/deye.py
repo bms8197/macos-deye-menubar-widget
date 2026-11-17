@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.4.1</xbar.version>
+# <xbar.version>v1.4.2</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -35,7 +35,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -45,7 +45,7 @@ USAGE_FILE = os.path.join(CFG_DIR, "usage.json")
 STATE_FILE = os.path.join(CFG_DIR, "state.json")
 INTERVALS = ["30s", "1m", "2m", "5m", "10m", "15m"]
 # Optional time-of-day schedule: a fast interval inside a daily window, a slow one outside.
-SCHEDULE_DEFAULTS = {"enabled": False, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}
+SCHEDULE_DEFAULTS = {"enabled": False, "from": 8, "to": 17, "inside": "1m", "outside": "5m"}
 SCHEDULE_INSIDE_OPTIONS = ["30s", "1m", "2m", "5m"]
 SCHEDULE_OUTSIDE_OPTIONS = ["1m", "2m", "5m", "10m", "15m"]
 DEFAULT_QUOTA = 100000
@@ -998,16 +998,21 @@ def set_schedule(key, value):
 
 
 def sched_title(s, t):
-    """Short summary, e.g. 'Refresh: 07:00–21:00 (1m), else 5m'."""
+    """Short summary, e.g. 'Refresh: 08:00–17:00 (1m), else 5m'."""
     return t("sched_title", start=f"{s['from']:02d}:00", end=f"{s['to']:02d}:00",
              inside=s["inside"], outside=s["outside"])
+
+
+# Parent items with a submenu get a no-op action: SwiftBar otherwise sometimes draws
+# them disabled (gray) after a setting was changed, and the submenu can't be opened.
+NOOP = "bash=/usr/bin/true terminal=false refresh=false"
 
 
 def menu_schedule(cfg, t, quota):
     s = schedule_cfg(cfg)
     hours = lambda h: f"{h:02d}:00"
     on = s["enabled"]
-    print(f"--{clean(t('sched_menu'))}" + (" | checked=true" if on else ""))
+    print(f"--{clean(t('sched_menu'))} | {NOOP}" + (" checked=true" if on else ""))
     print(f'----{clean(t("sched_enabled"))} | bash="{SELF}" param1=--set-schedule param2=enabled '
           f'param3={"off" if on else "on"} terminal=false refresh=true' + (" checked=true" if on else ""))
     calls = schedule_calls_per_month(s)
@@ -1017,13 +1022,13 @@ def menu_schedule(cfg, t, quota):
     print("-------")
     for key, label_key, options in (("inside", "sched_inside", SCHEDULE_INSIDE_OPTIONS),
                                     ("outside", "sched_outside", SCHEDULE_OUTSIDE_OPTIONS)):
-        print(f"----{clean(t(label_key, label=interval_label(s[key])))}")
+        print(f"----{clean(t(label_key, label=interval_label(s[key])))} | {NOOP}")
         for iv in options:
             mark = " checked=true" if iv == s[key] else ""
             print(f'------{clean(interval_label(iv))} | bash="{SELF}" param1=--set-schedule '
                   f'param2={key} param3={iv} terminal=false refresh=true{mark}')
     for key, label_key in (("from", "sched_from"), ("to", "sched_to")):
-        print(f"----{clean(t(label_key, hour=hours(s[key])))}")
+        print(f"----{clean(t(label_key, hour=hours(s[key])))} | {NOOP}")
         for h in range(24):
             mark = " checked=true" if h == s[key] else ""
             print(f'------{hours(h)} | bash="{SELF}" param1=--set-schedule param2={key} '
@@ -1034,10 +1039,9 @@ def menu_interval(cfg, t):
     quota = int(cfg.get("monthlyQuota", DEFAULT_QUOTA))
     current = current_interval()
     s = schedule_cfg(cfg)
-    if s["enabled"]:
-        print(clean(sched_title(s, t)))
-    else:
-        print(clean(t("refresh_interval")) + (f": {interval_label(current)}" if current else ""))
+    title = (sched_title(s, t) if s["enabled"] else
+             t("refresh_interval") + (f": {interval_label(current)}" if current else ""))
+    print(f"{clean(title)} | {NOOP}")
     options = INTERVALS if current in INTERVALS or not current else INTERVALS + [current]
     for iv in options:
         calls = calls_per_month(iv)

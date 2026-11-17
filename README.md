@@ -124,7 +124,7 @@ Also check the *Data from Deye* line in the menu, which shows when Deye measured
 
 ### Refresh schedule (optional)
 
-To refresh often while you are around and rarely at night, turn on **Refresh interval ▸ Schedule by time of day ▸ Use a schedule**. The defaults are **1 min from 07:00 to 21:00** and **5 min otherwise**; the window hours and both intervals can be changed from the same submenu. A window that crosses midnight (for example 22:00 to 06:00) works too.
+To refresh often while you are around and rarely at night, turn on **Refresh interval ▸ Schedule by time of day ▸ Use a schedule**. The defaults are **1 min from 08:00 to 17:00** and **5 min otherwise**; the window hours and both intervals can be changed from the same submenu. A window that crosses midnight (for example 22:00 to 06:00) works too.
 
 - SwiftBar runs the plugin at the faster of the two intervals; outside the window the plugin skips the API call until the slower interval has passed, so the quota only counts real calls. With the defaults that is about 29,000 calls per month instead of 43,200 at a constant 1 min.
 - Picking an interval from the plain list (**30 sec … 15 min**) turns the schedule off and uses that interval all day.
@@ -175,7 +175,7 @@ Non-secret settings are in `~/.config/deye/config.json`:
 | `showDetails` | Station mode only: `false` disables the inverter details and their extra request |
 | `detailsRefreshSeconds` | Station mode only: minimum time between inverter detail requests |
 | `minFetchSeconds` | Optional (default 60, `0` disables). A manual refresh or a menu setting change within this time of the last fetch shows the cached data instead of calling the API. Never applied to scheduled runs |
-| `schedule` | Optional time-of-day refresh, e.g. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` between the hours `from` and `to` (0-23, local time), `outside` the rest of the day. Off by default; see *Refresh schedule* |
+| `schedule` | Optional time-of-day refresh, e.g. `{"enabled": true, "from": 8, "to": 17, "inside": "1m", "outside": "5m"}`: `inside` between the hours `from` and `to` (0-23, local time), `outside` the rest of the day. Off by default; see *Refresh schedule* |
 | `menuTextColor` | Color of the text in the dropdown. `auto` (default): high contrast, black in light mode and white in dark mode, with the detail lines slightly softer. `default`: the system's faded gray. Or a fixed color, e.g. `#FFFFFF` or `#000000,#FFFFFF` (light, dark) |
 | `titleFont` / `titleSize` | Optional font name (e.g. `SFMono-Regular`) and size for the title |
 

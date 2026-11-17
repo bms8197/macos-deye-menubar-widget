@@ -242,8 +242,8 @@ def main():
 
     cfg = json.loads((cfg_dir / "config.json").read_text())
     _, out, _ = run()
-    expect("schedule is off by default", "\n--Schedule by time of day\n----Use a schedule | " in out
-           and "Refresh interval: 1 min\n" in out)
+    expect("schedule is off by default", "\n--Schedule by time of day | bash=/usr/bin/true terminal=false refresh=false\n----Use a schedule | " in out
+           and "Refresh interval: 1 min | bash=/usr/bin/true" in out)
     expect("invalid schedule setting rejected", run("--set-schedule", "from", "24")[0] == 1
            and run("--set-schedule", "inside", "soon")[0] == 1 and run("--set-schedule", "x", "1")[0] == 1)
     for key, value in (("from", str(inside_from)), ("to", str(inside_to)),

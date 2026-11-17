@@ -124,7 +124,7 @@ Verifică și linia *Date de la Deye* din meniu, care arată când a măsurat De
 
 ### Program de actualizare (opțional)
 
-Ca să actualizezi des cât ești prin preajmă și rar noaptea, activează **Interval actualizare ▸ Program pe ore ▸ Folosește program orar**. Valorile implicite sunt **1 min între 07:00 și 21:00** și **5 min în rest**; orele intervalului și ambele intervale se schimbă din același submeniu. Funcționează și un interval care trece de miezul nopții (de exemplu 22:00 – 06:00).
+Ca să actualizezi des cât ești prin preajmă și rar noaptea, activează **Interval actualizare ▸ Program pe ore ▸ Folosește program orar**. Valorile implicite sunt **1 min între 08:00 și 17:00** și **5 min în rest**; orele intervalului și ambele intervale se schimbă din același submeniu. Funcționează și un interval care trece de miezul nopții (de exemplu 22:00 – 06:00).
 
 - SwiftBar rulează pluginul la cel mai rapid dintre cele două intervale; în afara intervalului orar pluginul sare peste apelul API până trece intervalul mai lent, deci cota numără doar apelurile reale. Cu valorile implicite sunt cam 29.000 de apeluri pe lună, față de 43.200 la 1 min constant.
 - Dacă alegi un interval din lista simplă (**30 sec … 15 min**), programul se oprește și acel interval se folosește toată ziua.
@@ -175,7 +175,7 @@ Setările fără secrete sunt în `~/.config/deye/config.json`:
 | `showDetails` | Doar în modul station: `false` dezactivează detaliile invertorului și cererea suplimentară pentru ele |
 | `detailsRefreshSeconds` | Doar în modul station: timpul minim între cererile de detalii ale invertorului |
 | `minFetchSeconds` | Opțional (implicit 60, `0` dezactivează). O actualizare manuală sau o schimbare de setare din meniu, la mai puțin de acest timp după ultima aducere de date, afișează datele din cache în loc să apeleze API-ul. Nu se aplică actualizărilor programate |
-| `schedule` | Opțional: actualizare după ora din zi, de ex. `{"enabled": true, "from": 7, "to": 21, "inside": "1m", "outside": "5m"}`: `inside` între orele `from` și `to` (0-23, ora locală), `outside` în restul zilei. Dezactivat implicit; vezi *Program de actualizare* |
+| `schedule` | Opțional: actualizare după ora din zi, de ex. `{"enabled": true, "from": 8, "to": 17, "inside": "1m", "outside": "5m"}`: `inside` între orele `from` și `to` (0-23, ora locală), `outside` în restul zilei. Dezactivat implicit; vezi *Program de actualizare* |
 | `menuTextColor` | Culoarea textului din meniul derulant. `auto` (implicit): contrast ridicat, negru în modul luminos și alb în cel întunecat, cu liniile de detaliu puțin mai estompate. `default`: griul șters al sistemului. Sau o culoare fixă, de ex. `#FFFFFF` sau `#000000,#FFFFFF` (luminos, întunecat) |
 | `titleFont` / `titleSize` | Opțional: numele fontului (de ex. `SFMono-Regular`) și dimensiunea pentru titlu |
 

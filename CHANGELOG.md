@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.2 — 2026-11-17
+
+- Fixed: after changing the schedule hours, the *From* / *Until* submenus (and sometimes the refresh item itself) could turn gray and could no longer be opened. Submenu parents now carry a no-op action so SwiftBar keeps them enabled.
+- The default schedule window is now 08:00–17:00 (was 07:00–21:00). The schedule is still off by default and existing configs keep their hours.
+
 ## 1.4.1 — 2026-11-17
 
 - Dropdown text is easier to read: rows without an action are disabled menu items, which macOS draws in faded gray, so they now get an explicit high-contrast color (`menuTextColor`: `auto`, `default` for the old look, or a fixed color). With colored dropdown icons, section titles take their icon's color.
