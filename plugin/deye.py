@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # <xbar.title>Deye Menubar</xbar.title>
-# <xbar.version>v1.4.2</xbar.version>
+# <xbar.version>v1.4.3</xbar.version>
 # <xbar.desc>Deye inverter PV production, battery and consumption in the macOS menu bar.</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
@@ -35,7 +35,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "1.4.2"
+VERSION = "1.4.3"
 CFG_DIR = os.path.expanduser("~/.config/deye")
 CFG_FILE = os.path.join(CFG_DIR, "config.json")
 TOKEN_FILE = os.path.join(CFG_DIR, "token.json")
@@ -600,7 +600,9 @@ def build_title(cfg, s, soc_txt, arrow, is_low, stale, grid_down):
 def details_pv(pt, t):
     for i in range(1, 9):
         pw, v, a = pt.get(f"DCPowerPV{i}"), pt.get(f"DCVoltagePV{i}"), pt.get(f"DCCurrentPV{i}")
-        if not ((pw and pw[0] > 0) or (v and v[0] >= 20)):
+        # Skip unused strings (everything zero or missing), but keep a connected string
+        # at night, when it still reports a few volts and 0 W.
+        if not any(x and x[0] > 0 for x in (pw, v, a)):
             continue
         detail(f"PV{i}: " + join(fmt_power(pw[0]) if pw else None,
                                  f"{v[0]:.1f}V" if v else None,

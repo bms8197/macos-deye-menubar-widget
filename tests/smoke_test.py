@@ -216,6 +216,19 @@ def main():
     finally:
         FIXTURE.write_text(original, encoding="utf-8")
 
+    print("PV strings at night")
+    original = FIXTURE.read_text(encoding="utf-8")
+    try:
+        night = (original.replace("DCPowerPV1\t255\tW", "DCPowerPV1\t0\tW")
+                 .replace("DCVoltagePV1\t311.40\tV", "DCVoltagePV1\t14.00\tV"))
+        FIXTURE.write_text(night, encoding="utf-8")
+        _, out, _ = run()
+        main_menu = out.split("\n---\n")[1]
+        expect("string with 0 W and a few volts is listed", "PV1: 0W" in main_menu and "14.0V" in main_menu)
+        expect("unused strings stay hidden", "PV3" not in main_menu and "PV4" not in main_menu)
+    finally:
+        FIXTURE.write_text(original, encoding="utf-8")
+
     print("minimum fetch age")
     def api_count():
         return json.loads((cfg_dir / "usage.json").read_text())["count"]

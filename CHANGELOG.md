@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.3 — 2026-11-24
+
+- Fixed: a PV string was hidden at night when it reported 0 W and less than 20 V. A string is now listed unless its power, voltage and current are all zero, so unused strings (0 V) stay hidden while a connected one still shows (for example `PV1: 0W · 14.0V · 0.00A`).
+
 ## 1.4.2 — 2026-11-17
 
 - Fixed: after changing the schedule hours, the *From* / *Until* submenus (and sometimes the refresh item itself) could turn gray and could no longer be opened. Submenu parents now carry a no-op action so SwiftBar keeps them enabled.
